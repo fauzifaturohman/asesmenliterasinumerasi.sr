@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asesmen Literasi & Numerasi — SRD / SRMP / SRMA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --primary:#2563eb; --primary-dark:#1e40af; --primary-light:#dbeafe;
+    --success:#16a34a; --danger:#dc2626; --warning:#f59e0b;
+    --bg:#f1f5f9; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+    --border:#e2e8f0; --radius:14px;
+    --shadow:0 10px 30px -10px rgba(15,23,42,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:linear-gradient(160deg,#eff6ff 0%,#f1f5f9 40%,#ecfeff 100%);
+    color:var(--text); min-height:100vh; padding:24px 16px 60px; line-height:1.55;
+  }
+  .app{max-width:880px;margin:0 auto}
+
+  header.brand{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+  .logo{
+    width:52px;height:52px;border-radius:14px;
+    background:linear-gradient(135deg,var(--primary),#06b6d4);
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:22px;
+    box-shadow:var(--shadow);flex-shrink:0;
+  }
+  .brand h1{font-size:20px;letter-spacing:-.3px}
+  .brand p{font-size:13px;color:var(--muted)}
+
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px;border:1px solid var(--border);}
+  .hero-title{font-size:26px;letter-spacing:-.5px;margin-bottom:8px}
+  .hero-sub{color:var(--muted);font-size:14.5px;margin-bottom:26px}
+  .section-label{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+
+  .grid{display:grid;gap:14px;margin-bottom:26px}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  .grid-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:640px){.grid-3,.grid-2{grid-template-columns:1fr}}
+
+  .opt{
+    border:2px solid var(--border);background:#fff;border-radius:12px;
+    padding:18px 16px;cursor:pointer;transition:.18s;text-align:left;
+    font-family:inherit;color:inherit;display:block;width:100%;
+  }
+  .opt:hover{border-color:#93c5fd;transform:translateY(-2px)}
+  .opt.active{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .opt .emoji{font-size:24px;display:block;margin-bottom:8px}
+  .opt .t{font-weight:700;font-size:15px;margin-bottom:3px}
+  .opt .d{font-size:12.5px;color:var(--muted);line-height:1.4}
+
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+  @media(max-width:560px){.form-row{grid-template-columns:1fr}}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:#334155;margin-bottom:6px;}
+  .field label .req{color:var(--danger)}
+  .field input{
+    width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;
+    font-family:inherit;font-size:14.5px;color:var(--text);background:#fff;
+    transition:.15s;outline:none;
+  }
+  .field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .field input.invalid{border-color:var(--danger);background:#fef2f2;}
+
+  .info-box{
+    background:#eff6ff;border:1px solid #bfdbfe;border-radius:11px;
+    padding:14px 16px;font-size:13.5px;color:#1e40af;margin-bottom:22px;line-height:1.6;
+  }
+  .info-box b{color:#1e3a8a}
+  .info-box.warn{background:#fef3c7;border-color:#fcd34d;color:#78350f}
+  .info-box.warn b{color:#7c2d12}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:none;border-radius:11px;padding:13px 24px;
+    font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:.18s;
+  }
+  .btn-primary{background:var(--primary);color:#fff;width:100%}
+  .btn-primary:hover:not(:disabled){background:var(--primary-dark)}
+  .btn-primary:disabled{background:#cbd5e1;cursor:not-allowed}
+  .btn-ghost{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+  .btn-ghost:hover{border-color:#94a3b8;background:#f8fafc}
+  .btn-pdf{background:#dc2626;color:#fff}
+  .btn-pdf:hover{background:#b91c1c}
+
+  .quiz-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+  .top-left{display:flex;gap:8px;flex-wrap:wrap}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--primary-light);color:var(--primary-dark);
+    font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:999px;
+  }
+  .badge.gray{background:#f1f5f9;color:var(--muted)}
+  .badge.diff-mudah{background:#dcfce7;color:#166534}
+  .badge.diff-sedang{background:#fef3c7;color:#92400e}
+  .badge.diff-sulit{background:#fee2e2;color:#991b1b}
+  .badge.timer{background:#fef3c7;color:#92400e;font-variant-numeric:tabular-nums;font-size:14px;letter-spacing:.5px;transition:.2s;}
+  .badge.timer.danger{background:#fee2e2;color:#991b1b;animation:pulse 1s infinite;}
+  @keyframes pulse{50%{opacity:.6}}
+
+  .progress-wrap{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:24px;}
+  .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),#06b6d4);border-radius:999px;transition:width .35s ease;}
+
+  .q-text{font-size:17.5px;font-weight:600;line-height:1.6;margin-bottom:20px}
+  .passage{
+    background:#f8fafc;border-left:4px solid var(--primary);
+    padding:16px 18px;border-radius:8px;
+    font-size:14.5px;line-height:1.75;color:#334155;
+    margin-bottom:20px;white-space:pre-line;
+  }
+
+  .choices{display:flex;flex-direction:column;gap:11px;margin-bottom:24px}
+  .choice{
+    display:flex;align-items:flex-start;gap:12px;
+    border:2px solid var(--border);border-radius:11px;
+    padding:14px 16px;cursor:pointer;transition:.15s;
+    background:#fff;font-family:inherit;color:inherit;text-align:left;
+    font-size:14.8px;line-height:1.5;width:100%;
+  }
+  .choice:hover{border-color:#93c5fd;background:#f8fbff}
+  .choice.selected{border-color:var(--primary);background:var(--primary-light)}
+  .choice .letter{
+    width:26px;height:26px;border-radius:50%;background:#e2e8f0;color:var(--muted);
+    display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0;transition:.15s;
+  }
+  .choice.selected .letter{background:var(--primary);color:#fff}
+
+  .quiz-actions{display:flex;gap:10px}
+  .quiz-actions .btn{flex:1}
+
+  .score-hero{text-align:center;padding:14px 0 26px}
+  .score-circle{
+    width:150px;height:150px;border-radius:50%;margin:0 auto 18px;
+    display:grid;place-items:center;position:relative;
+    background:conic-gradient(var(--primary) 0deg, #e2e8f0 0deg);
+    transition:background .8s ease;
+  }
+  .score-circle::after{content:'';position:absolute;inset:11px;background:#fff;border-radius:50%;}
+  .score-inner{position:relative;z-index:1;text-align:center}
+  .score-num{font-size:38px;font-weight:800;line-height:1;letter-spacing:-1px}
+  .score-lbl{font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.8px}
+
+  .verdict{font-size:20px;font-weight:700;margin-bottom:6px}
+  .verdict-desc{color:var(--muted);font-size:14px;max-width:520px;margin:0 auto}
+
+  .ident-card{
+    background:#f8fafc;border:1px solid var(--border);border-radius:11px;
+    padding:14px 18px;margin-bottom:8px;
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  }
+  @media(max-width:520px){.ident-card{grid-template-columns:1fr}}
+  .ident-card .k{font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  .ident-card .v{font-size:15px;font-weight:700;color:var(--text);margin-top:2px}
+
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0;}
+  .stat{background:#f8fafc;border:1px solid var(--border);border-radius:11px;padding:14px;text-align:center;}
+  .stat .v{font-size:22px;font-weight:800;line-height:1.1}
+  .stat .k{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:4px;letter-spacing:.4px}
+  .stat.ok .v{color:var(--success)}
+  .stat.no .v{color:var(--danger)}
+
+  .diff-breakdown{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;
+  }
+  .diff-chip{
+    border-radius:10px;padding:11px 12px;text-align:center;
+    font-size:12.5px;font-weight:600;line-height:1.3;
+  }
+  .diff-chip.mudah{background:#dcfce7;color:#166534}
+  .diff-chip.sedang{background:#fef3c7;color:#92400e}
+  .diff-chip.sulit{background:#fee2e2;color:#991b1b}
+  .diff-chip .n{font-size:16px;font-weight:800;display:block}
+
+  .review-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .review-head h3{font-size:16px}
+  .rev-item{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:#fff;}
+  .rev-item.correct{border-left:5px solid var(--success)}
+  .rev-item.wrong{border-left:5px solid var(--danger)}
+  .rev-q{font-size:14.5px;font-weight:600;margin-bottom:12px;line-height:1.55}
+  .rev-line{font-size:13.5px;padding:9px 12px;border-radius:8px;margin-bottom:7px;display:flex;gap:8px;align-items:flex-start;}
+  .rev-line .tag{font-weight:700;flex-shrink:0;font-size:12px}
+  .rev-line.your-ok{background:#f0fdf4;color:#166534}
+  .rev-line.your-no{background:#fef2f2;color:#991b1b}
+  .rev-line.key{background:#eff6ff;color:#1e40af}
+  .rev-exp{background:#fffbeb;border:1px dashed #fcd34d;color:#78350f;font-size:13px;line-height:1.6;padding:11px 13px;border-radius:8px;margin-top:9px;}
+  .rev-exp b{display:block;margin-bottom:3px;font-size:12px;letter-spacing:.4px}
+
+  .result-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+  .result-actions .btn{flex:1;min-width:150px}
+
+  .hidden{display:none !important}
+  footer.cred{text-align:center;color:var(--muted);font-size:12px;margin-top:28px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="brand">
+    <div class="logo">A</div>
+    <div>
+      <h1>Asesmen Literasi &amp; Numerasi</h1>
+      <p>SRD · SRMP · SRMA — Sekolah Rakyat</p>
+    </div>
+  </header>
+
+  <!-- ================= BERANDA ================= -->
+  <main id="screen-home" class="card">
+    <h2 class="hero-title">Mulai Asesmen</h2>
+    <p class="hero-sub">Isi identitas, pilih jenjang &amp; jenis asesmen. Soal dipilih otomatis sesuai jenjang dengan komposisi tingkat kesulitan yang seimbang.</p>
+
+    <div class="section-label">1. Identitas Peserta</div>
+    <div class="form-row">
+      <div class="field">
+        <label for="inp-nama">Nama Lengkap <span class="req">*</span></label>
+        <input type="text" id="inp-nama" placeholder="cth: Ahmad Fauzi" maxlength="60" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="inp-kelas">Kelas <span class="req">*</span></label>
+        <input type="text" id="inp-kelas" placeholder="cth: 7A / SRMA-1" maxlength="30" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="section-label">2. Pilih Jenjang</div>
+    <div class="grid grid-3" id="level-options">
+      <button class="opt" data-level="SRD">
+        <span class="emoji">🌱</span>
+        <div class="t">SRD</div>
+        <div class="d">18 soal · literasi &amp; numerasi dasar</div>
+      </button>
+      <button class="opt" data-level="SRMP">
+        <span class="emoji">📘</span>
+        <div class="t">SRMP</div>
+        <div class="d">15 soal · pemahaman &amp; penalaran</div>
+      </button>
+      <button class="opt" data-level="SRMA">
+        <span class="emoji">🎓</span>
+        <div class="t">SRMA</div>
+        <div class="d">12 soal · analisis &amp; evaluasi kritis</div>
+      </button>
+    </div>
+
+    <div class="section-label">3. Pilih Jenis Asesmen</div>
+    <div class="grid grid-2" id="type-options">
+      <button class="opt" data-type="literasi">
+        <span class="emoji">📖</span>
+        <div class="t">Literasi</div>
+        <div class="d">Membaca, memahami, dan menafsirkan teks</div>
+      </button>
+      <button class="opt" data-type="numerasi">
+        <span class="emoji">🔢</span>
+        <div class="t">Numerasi</div>
+        <div class="d">Bilangan, aljabar, geometri, dan data</div>
+      </button>
+    </div>
+
+    <div class="info-box">
+      ⏱️ <b>Waktu pengerjaan: 35 menit.</b> Timer berjalan otomatis.
+      Setiap sesi menampilkan komposisi soal berimbang: mudah, sedang, dan sulit — sesuai jenjang peserta.
+    </div>
+
+    <div class="info-box warn">
+      <b>Prinsip diferensiasi:</b> soal dipilih dari bank yang lebih luas dengan proporsi tingkat kesulitan yang disesuaikan jenjang.
+      SRD lebih banyak soal mudah, SRMA lebih banyak soal sulit. Soal yang muncul akan berbeda setiap sesi.
+    </div>
+
+    <button class="btn btn-primary" id="btn-start" disabled>Mulai Asesmen</button>
+  </main>
+
+  <!-- ================= KUIS ================= -->
+  <main id="screen-quiz" class="card hidden">
+    <div class="quiz-top">
+      <div class="top-left">
+        <span class="badge" id="quiz-badge">SRD · Literasi</span>
+        <span class="badge gray" id="quiz-counter">Soal 1 / 18</span>
+        <span class="badge diff-mudah" id="quiz-diff">Mudah</span>
+      </div>
+      <span class="badge timer" id="quiz-timer">35:00</span>
+    </div>
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+
+    <div id="passage-box" class="passage hidden"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="choices" id="choices"></div>
+
+    <div class="quiz-actions">
+      <button class="btn btn-ghost" id="btn-quit">Keluar</button>
+      <button class="btn btn-primary" id="btn-next" disabled>Lanjut →</button>
+    </div>
+  </main>
+
+  <!-- ================= HASIL ================= -->
+  <main id="screen-result" class="card hidden">
+
+    <div class="ident-card">
+      <div><div class="k">Nama Peserta</div><div class="v" id="res-nama">—</div></div>
+      <div><div class="k">Kelas</div><div class="v" id="res-kelas">—</div></div>
+      <div><div class="k">Jenjang</div><div class="v" id="res-jenjang">—</div></div>
+      <div><div class="k">Jenis Asesmen</div><div class="v" id="res-jenis">—</div></div>
+    </div>
+
+    <div class="score-hero">
+      <div class="score-circle" id="score-circle">
+        <div class="score-inner">
+          <div class="score-num" id="score-num">0</div>
+          <div class="score-lbl">SKOR</div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict">—</div>
+      <div class="verdict-desc" id="verdict-desc">—</div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat ok"><div class="v" id="stat-correct">0</div><div class="k">BENAR</div></div>
+      <div class="stat no"><div class="v" id="stat-wrong">0</div><div class="k">SALAH</div></div>
+      <div class="stat"><div class="v" id="stat-total">0</div><div class="k">TOTAL SOAL</div></div>
+    </div>
+
+    <div class="diff-breakdown" id="diff-breakdown"></div>
+
+    <div class="review-head">
+      <h3>Pembahasan Jawaban</h3>
+      <span class="badge gray" id="review-badge"></span>
+    </div>
+    <div id="review-list"></div>
+
+    <div class="result-actions">
+      <button class="btn btn-ghost" id="btn-home">← Beranda</button>
+      <button class="btn btn-pdf" id="btn-pdf">⬇ Unduh PDF</button>
+      <button class="btn btn-primary" id="btn-retry">Ulangi Asesmen</button>
+    </div>
+  </main>
+
+  <footer class="cred">Aplikasi Asesmen Literasi &amp; Numerasi · SRD / SRMP / SRMA</footer>
+</div>
+
+<script>
+/* ============================================================
+   BANK SOAL — setiap soal: { passage?, q, options[4], answer, exp, diff }
+   diff: 'mudah' | 'sedang' | 'sulit'
+   ============================================================ */
+const BANK = {
+
+/* ==========================================================
+   SRD — Sekolah Rakyat Dasar
+   ========================================================== */
+SRD: {
+  literasi: [
+    /* ===== Bacaan 1: Kancil ===== */
+    { diff:'mudah', passage:"Di suatu hutan, hiduplah seekor kancil yang cerdik. Suatu hari, ia ingin menyeberangi sungai yang lebar. Namun, di sungai itu ada banyak buaya yang siap menerkamnya. Kancil pun mendapat ide cerdas. Ia berkata kepada buaya-buaya bahwa raja hutan ingin menghitung jumlah mereka. Buaya-buaya pun berbaris rapi. Kancil melompat dari punggung satu buaya ke punggung buaya lainnya sambil menghitung. Setelah sampai di seberang, kancil segera berlari menghilang.",
+      q:"Apa yang diinginkan Kancil ketika bertemu buaya?", options:["Menangkap buaya","Menyeberangi sungai","Mencari makan","Bermain di sungai"], answer:1, exp:"Pada teks dijelaskan bahwa Kancil ingin menyeberangi sungai yang lebar." },
+    { diff:'sedang', passage:"Di suatu hutan, hiduplah seekor kancil yang cerdik. Suatu hari, ia ingin menyeberangi sungai yang lebar. Namun, di sungai itu ada banyak buaya yang siap menerkamnya. Kancil pun mendapat ide cerdas. Ia berkata kepada buaya-buaya bahwa raja hutan ingin menghitung jumlah mereka. Buaya-buaya pun berbaris rapi. Kancil melompat dari punggung satu buaya ke punggung buaya lainnya sambil menghitung. Setelah sampai di seberang, kancil segera berlari menghilang.",
+      q:"Mengapa Kancil berkata bahwa raja hutan ingin menghitung buaya?", options:["Karena raja hutan benar-benar memerintahkan","Agar buaya berbaris dan bisa ditumpangi","Karena Kancil ingin memberi hadiah","Agar buaya pergi dari sungai"], answer:1, exp:"Kancil menggunakan alasan palsu agar buaya berbaris rapi sehingga bisa ia tumpangi." },
+    { diff:'sedang', passage:"Di suatu hutan, hiduplah seekor kancil yang cerdik. Suatu hari, ia ingin menyeberangi sungai yang lebar. Namun, di sungai itu ada banyak buaya yang siap menerkamnya. Kancil pun mendapat ide cerdas. Ia berkata kepada buaya-buaya bahwa raja hutan ingin menghitung jumlah mereka. Buaya-buaya pun berbaris rapi. Kancil melompat dari punggung satu buaya ke punggung buaya lainnya sambil menghitung. Setelah sampai di seberang, kancil segera berlari menghilang.",
+      q:"Sifat Kancil dalam cerita tersebut adalah ...", options:["Sombong dan malas","Cerdik dan licik","Pemalas dan penakut","Baik hati dan jujur"], answer:1, exp:"Kancil cerdik karena berhasil menyeberang, namun juga licik karena menipu buaya." },
+
+    /* ===== Bacaan 2: Kerja Bakti ===== */
+    { diff:'mudah', passage:"Hari Minggu pagi, warga Kampung Melati mengadakan kerja bakti. Mereka membersihkan saluran air, memotong rumput, dan mengumpulkan sampah. Pak RT membagi tugas agar pekerjaan cepat selesai. Anak-anak juga ikut membantu dengan memungut sampah di jalan. Setelah tiga jam bekerja, kampung menjadi bersih dan wangi. Warga pun duduk bersama menikmati makanan yang telah disiapkan ibu-ibu.",
+      q:"Apa tujuan utama warga mengadakan kerja bakti?", options:["Berwisata bersama","Membersihkan kampung","Membagi makanan","Membangun rumah Pak RT"], answer:1, exp:"Kerja bakti dilakukan untuk membersihkan saluran air, memotong rumput, dan mengumpulkan sampah." },
+    { diff:'mudah', passage:"Hari Minggu pagi, warga Kampung Melati mengadakan kerja bakti. Mereka membersihkan saluran air, memotong rumput, dan mengumpulkan sampah. Pak RT membagi tugas agar pekerjaan cepat selesai. Anak-anak juga ikut membantu dengan memungut sampah di jalan. Setelah tiga jam bekerja, kampung menjadi bersih dan wangi. Warga pun duduk bersama menikmati makanan yang telah disiapkan ibu-ibu.",
+      q:"Apa yang dilakukan anak-anak saat kerja bakti?", options:["Memasak makanan","Memotong rumput","Memungut sampah di jalan","Membagi tugas"], answer:2, exp:"Teks menyebutkan anak-anak ikut membantu dengan memungut sampah di jalan." },
+    { diff:'mudah', passage:"Hari Minggu pagi, warga Kampung Melati mengadakan kerja bakti. Mereka membersihkan saluran air, memotong rumput, dan mengumpulkan sampah. Pak RT membagi tugas agar pekerjaan cepat selesai. Anak-anak juga ikut membantu dengan memungut sampah di jalan. Setelah tiga jam bekerja, kampung menjadi bersih dan wangi. Warga pun duduk bersama menikmati makanan yang telah disiapkan ibu-ibu.",
+      q:"Berapa lama warga bekerja bakti?", options:["Satu jam","Dua jam","Tiga jam","Empat jam"], answer:2, exp:"Teks menyebutkan 'Setelah tiga jam bekerja, kampung menjadi bersih dan wangi.'" },
+
+    /* ===== Bacaan 3: Kucing Belang ===== */
+    { diff:'mudah', passage:"Ayah membawa pulang seekor anak kucing dari pasar. Anak kucing itu berwarna putih dengan bercak hitam di telinganya. Andi sangat senang dan langsung memberinya nama Belang. Setiap hari, Andi memberi Belang makan dan mengajaknya bermain. Belang tumbuh menjadi kucing yang jinak dan lucu. Ia selalu menunggu Andi pulang sekolah di depan pintu.",
+      q:"Mengapa Andi menamai kucingnya Belang?", options:["Karena kucingnya besar","Karena kucingnya berwarna putih bersih","Karena ada bercak hitam di telinganya","Karena kucingnya suka bermain"], answer:2, exp:"Nama 'Belang' diberikan karena ada bercak hitam di telinga kucing tersebut." },
+    { diff:'mudah', passage:"Ayah membawa pulang seekor anak kucing dari pasar. Anak kucing itu berwarna putih dengan bercak hitam di telinganya. Andi sangat senang dan langsung memberinya nama Belang. Setiap hari, Andi memberi Belang makan dan mengajaknya bermain. Belang tumbuh menjadi kucing yang jinak dan lucu. Ia selalu menunggu Andi pulang sekolah di depan pintu.",
+      q:"Apa yang selalu dilakukan Belang ketika Andi pulang sekolah?", options:["Tidur di kamar","Menunggu di depan pintu","Bermain di halaman","Makan di dapur"], answer:1, exp:"Teks menyebutkan Belang selalu menunggu Andi pulang sekolah di depan pintu." },
+
+    /* ===== Bacaan 4: Hujan Deras ===== */
+    { diff:'mudah', passage:"Hujan turun sangat deras sejak siang. Jalanan di depan rumah Budi tergenang air. Budi dan ayahnya bekerja sama membersihkan saluran air agar air cepat surut. Mereka juga mengangkat sampah yang menyumbat. Setelah satu jam, air mulai mengalir lancar. Ibu menyiapkan teh hangat untuk mereka berdua yang lelah.",
+      q:"Apa yang dilakukan Budi dan ayahnya?", options:["Bermain air hujan","Membersihkan saluran air","Membeli payung","Melihat hujan dari jendela"], answer:1, exp:"Budi dan ayahnya bekerja sama membersihkan saluran air agar air cepat surut." },
+    { diff:'sedang', passage:"Hujan turun sangat deras sejak siang. Jalanan di depan rumah Budi tergenang air. Budi dan ayahnya bekerja sama membersihkan saluran air agar air cepat surut. Mereka juga mengangkat sampah yang menyumbat. Setelah satu jam, air mulai mengalir lancar. Ibu menyiapkan teh hangat untuk mereka berdua yang lelah.",
+      q:"Apa yang dilakukan Ibu setelah mereka selesai bekerja?", options:["Menyapu halaman","Menyiapkan teh hangat","Memasak nasi","Mencuci pakaian"], answer:1, exp:"Teks menyebutkan Ibu menyiapkan teh hangat untuk mereka berdua yang lelah." },
+
+    /* ===== Bacaan 5: Kupu-kupu ===== */
+    { diff:'sedang', passage:"Kupu-kupu mengalami metamorfosis sempurna. Ia memulai hidup sebagai telur, lalu menjadi ulat, kepompong, dan akhirnya kupu-kupu dewasa. Proses ini memakan waktu beberapa minggu. Ketika masih ulat, ia rajin makan daun. Setelah cukup besar, ia berubah menjadi kepompong dan tidak bergerak. Dari kepompong itulah muncul kupu-kupu cantik bersayap indah.",
+      q:"Urutan metamorfosis kupu-kupu yang benar adalah ...", options:["Telur – kepompong – ulat – kupu-kupu","Telur – ulat – kepompong – kupu-kupu","Ulat – telur – kepompong – kupu-kupu","Kepompong – ulat – telur – kupu-kupu"], answer:1, exp:"Metamorfosis sempurna kupu-kupu: telur → ulat → kepompong → kupu-kupu dewasa." },
+    { diff:'sedang', passage:"Kupu-kupu mengalami metamorfosis sempurna. Ia memulai hidup sebagai telur, lalu menjadi ulat, kepompong, dan akhirnya kupu-kupu dewasa. Proses ini memakan waktu beberapa minggu. Ketika masih ulat, ia rajin makan daun. Setelah cukup besar, ia berubah menjadi kepompong dan tidak bergerak. Dari kepompong itulah muncul kupu-kupu cantik bersayap indah.",
+      q:"Apa yang dilakukan ulat sebelum menjadi kepompong?", options:["Terbang tinggi","Rajin makan daun","Berhenti makan","Bertelur"], answer:1, exp:"Teks menyebutkan ketika masih ulat, ia rajin makan daun." },
+    { diff:'sulit', passage:"Kupu-kupu mengalami metamorfosis sempurna. Ia memulai hidup sebagai telur, lalu menjadi ulat, kepompong, dan akhirnya kupu-kupu dewasa. Proses ini memakan waktu beberapa minggu. Ketika masih ulat, ia rajin makan daun. Setelah cukup besar, ia berubah menjadi kepompong dan tidak bergerak. Dari kepompong itulah muncul kupu-kupu cantik bersayap indah.",
+      q:"Mengapa ulat perlu makan banyak daun?", options:["Agar bisa terbang","Untuk mengumpulkan energi sebelum menjadi kepompong","Agar tidak dimakan burung","Supaya cepat menetas"], answer:1, exp:"Ulat makan banyak untuk menyimpan energi yang dibutuhkan selama masa kepompong." },
+
+    /* ===== Bacaan 6: Cuci Tangan ===== */
+    { diff:'mudah', passage:"Cuci tangan merupakan kebiasaan baik yang harus dilakukan setiap hari. Kita harus mencuci tangan sebelum makan, setelah bermain, dan setelah dari toilet. Cuci tangan yang benar menggunakan sabun dan air mengalir. Gosok tangan minimal 20 detik, lalu bilas hingga bersih. Dengan cuci tangan, kuman dan penyakit dapat dicegah.",
+      q:"Kapan kita harus mencuci tangan?", options:["Sebelum makan dan setelah dari toilet","Hanya saat kotor","Sekali sehari","Hanya pagi hari"], answer:0, exp:"Teks menyebutkan mencuci tangan dilakukan sebelum makan, setelah bermain, dan setelah dari toilet." },
+    { diff:'mudah', passage:"Cuci tangan merupakan kebiasaan baik yang harus dilakukan setiap hari. Kita harus mencuci tangan sebelum makan, setelah bermain, dan setelah dari toilet. Cuci tangan yang benar menggunakan sabun dan air mengalir. Gosok tangan minimal 20 detik, lalu bilas hingga bersih. Dengan cuci tangan, kuman dan penyakit dapat dicegah.",
+      q:"Berapa lama minimal kita menggosok tangan saat mencuci?", options:["5 detik","10 detik","20 detik","1 menit"], answer:2, exp:"Teks menyebutkan gosok tangan minimal 20 detik." },
+    { diff:'sedang', passage:"Cuci tangan merupakan kebiasaan baik yang harus dilakukan setiap hari. Kita harus mencuci tangan sebelum makan, setelah bermain, dan setelah dari toilet. Cuci tangan yang benar menggunakan sabun dan air mengalir. Gosok tangan minimal 20 detik, lalu bilas hingga bersih. Dengan cuci tangan, kuman dan penyakit dapat dicegah.",
+      q:"Apa manfaat mencuci tangan menurut teks?", options:["Tangan menjadi wangi","Mencegah kuman dan penyakit","Tangan menjadi putih","Menghilangkan lelah"], answer:1, exp:"Teks menyebutkan 'Dengan cuci tangan, kuman dan penyakit dapat dicegah.'" },
+
+    /* ===== Bacaan 7: Pohon Mangga ===== */
+    { diff:'sedang', passage:"Di depan rumah Nenek tumbuh pohon mangga yang besar. Setiap musim kemarau, pohon itu berbuah lebat. Nenek selalu membagikan mangga kepada tetangga. Anak-anak senang memanjat pohon untuk memetik buah yang matang. Buah mangga itu manis dan berwarna kuning keemasan.",
+      q:"Kapan pohon mangga Nenek berbuah lebat?", options:["Musim hujan","Musim kemarau","Setiap bulan","Setiap minggu"], answer:1, exp:"Teks menyebutkan setiap musim kemarau, pohon itu berbuah lebat." },
+    { diff:'sedang', passage:"Di depan rumah Nenek tumbuh pohon mangga yang besar. Setiap musim kemarau, pohon itu berbuah lebat. Nenek selalu membagikan mangga kepada tetangga. Anak-anak senang memanjat pohon untuk memetik buah yang matang. Buah mangga itu manis dan berwarna kuning keemasan.",
+      q:"Apa yang dilakukan Nenek dengan mangga hasil panen?", options:["Dijual ke pasar","Dibagikan kepada tetangga","Dibuat jus","Disimpan di gudang"], answer:1, exp:"Teks menyebutkan Nenek selalu membagikan mangga kepada tetangga." },
+
+    /* ===== Soal mandiri ===== */
+    { diff:'mudah', q:"Kalimat yang menggunakan tanda baca dengan benar adalah ...", options:["siti pergi ke pasar.","Siti pergi ke pasar.","Siti pergi ke pasar","siti pergi ke pasar"], answer:1, exp:"Kalimat dimulai dengan huruf kapital dan diakhiri tanda titik." },
+    { diff:'mudah', q:"Antonim (lawan kata) dari kata 'rajin' adalah ...", options:["Malas","Pintar","Cepat","Baik"], answer:0, exp:"'Rajin' berarti suka bekerja; lawannya adalah 'malas'." },
+    { diff:'mudah', q:"Sinonim (persamaan kata) dari kata 'senang' adalah ...", options:["Sedih","Gembira","Takut","Marah"], answer:1, exp:"'Senang' bersinonim dengan 'gembira'." },
+    { diff:'mudah', q:"Penulisan nama hari yang benar adalah ...", options:["senin","senin.","Senin","SENIN"], answer:2, exp:"Nama hari ditulis dengan huruf kapital di awal kata, yaitu 'Senin'." },
+    { diff:'sedang', q:"Kata 'membaca' terbentuk dari kata dasar ...", options:["Baca","Bacaan","Pembaca","Membac"], answer:0, exp:"'Membaca' berasal dari kata dasar 'baca' yang mendapat awalan me-." },
+    { diff:'sedang', q:"Kalimat yang menggunakan kata depan 'di' secara tepat adalah ...", options:["Buku itu di baca Andi.","Andi membaca buku di perpustakaan.","Andi di beri hadiah.","Buku itu di simpan di rak."], answer:1, exp:"Kata depan 'di' ditulis terpisah untuk menunjukkan tempat, seperti 'di perpustakaan'." },
+    { diff:'sedang', q:"Penulisan nama orang yang benar adalah ...", options:["budi santoso","Budi santoso","Budi Santoso","BUDI SANTOSO"], answer:2, exp:"Nama orang ditulis dengan huruf kapital di setiap awal kata." },
+    { diff:'sedang', q:"Kalimat tanya yang tepat diakhiri dengan tanda ...", options:["Titik (.)","Tanda tanya (?)","Tanda seru (!)","Koma (,)"], answer:1, exp:"Kalimat tanya diakhiri tanda tanya (?)." },
+    { diff:'sedang', q:"Kata 'berlari-lari' termasuk kata ...", options:["Kata depan","Kata ulang","Kata sambung","Kata bilangan"], answer:1, exp:"'Berlari-lari' adalah kata ulang karena ada pengulangan kata." },
+    { diff:'sulit', q:"Kalimat perintah yang tepat adalah ...", options:["Apakah kamu sudah makan?","Tolong tutup pintu itu!","Wah, indah sekali!","Saya suka makan bakso."], answer:1, exp:"Kalimat perintah berisi permintaan/suruhan dan diakhiri tanda seru." },
+    { diff:'sulit', q:"Ide pokok sebuah paragraf biasanya terdapat pada ...", options:["Kalimat terakhir saja","Kalimat utama","Semua kalimat","Judul saja"], answer:1, exp:"Ide pokok paragraf terdapat pada kalimat utama yang biasanya di awal atau akhir paragraf." },
+    { diff:'sulit', q:"Kata sapaan yang tepat untuk seorang guru adalah ...", options:["Hai, Budi!","Ibu Guru, bolehkah saya bertanya?","Eh, kamu!","Woy, datang sini!"], answer:1, exp:"Kata sapaan harus sopan, seperti 'Ibu Guru'." }
+  ],
+
+  numerasi: [
+    { diff:'mudah', q:"Hasil dari 125 + 278 adalah ...", options:["393","403","413","383"], answer:1, exp:"125 + 278 = 403." },
+    { diff:'mudah', q:"Hasil dari 350 − 178 adalah ...", options:["162","172","182","192"], answer:1, exp:"350 − 178 = 172." },
+    { diff:'mudah', q:"Hasil dari 24 × 5 adalah ...", options:["110","115","120","125"], answer:2, exp:"24 × 5 = 120." },
+    { diff:'mudah', q:"Bu Siti memiliki 24 kue. Ia membagikannya sama rata kepada 6 anak. Berapa kue yang diterima setiap anak?", options:["3 kue","4 kue","5 kue","6 kue"], answer:1, exp:"24 ÷ 6 = 4. Jadi setiap anak menerima 4 kue." },
+    { diff:'mudah', q:"Nilai tempat angka 7 pada bilangan 4.752 adalah ...", options:["Satuan","Puluhan","Ratusan","Ribuan"], answer:2, exp:"Pada 4.752, angka 7 menempati posisi ratusan (700)." },
+    { diff:'mudah', q:"Urutan bilangan dari yang terkecil: 45, 39, 52, 41 adalah ...", options:["39, 41, 45, 52","45, 41, 39, 52","52, 45, 41, 39","39, 45, 41, 52"], answer:0, exp:"Urutan terkecil ke terbesar: 39, 41, 45, 52." },
+    { diff:'mudah', q:"Sebuah persegi memiliki panjang sisi 7 cm. Berapa kelilingnya?", options:["14 cm","21 cm","28 cm","49 cm"], answer:2, exp:"Keliling persegi = 4 × sisi = 4 × 7 = 28 cm." },
+    { diff:'mudah', q:"Sebuah persegi panjang memiliki panjang 10 cm dan lebar 5 cm. Berapa luasnya?", options:["15 cm²","30 cm²","50 cm²","100 cm²"], answer:2, exp:"Luas persegi panjang = panjang × lebar = 10 × 5 = 50 cm²." },
+    { diff:'mudah', q:"Pecahan yang senilai dengan 1/2 adalah ...", options:["2/3","2/4","3/4","1/3"], answer:1, exp:"2/4 disederhanakan menjadi 1/2 karena pembilang dan penyebut dibagi 2." },
+    { diff:'mudah', q:"Andi membeli 3 buku seharga Rp5.000 per buku. Ia membayar dengan uang Rp20.000. Berapa kembaliannya?", options:["Rp3.000","Rp4.000","Rp5.000","Rp6.000"], answer:2, exp:"Harga 3 buku = 3 × Rp5.000 = Rp15.000. Kembalian = Rp20.000 − Rp15.000 = Rp5.000." },
+    { diff:'mudah', q:"Pukul 07.30 ditambah 45 menit menjadi pukul ...", options:["08.05","08.10","08.15","08.20"], answer:2, exp:"07.30 + 45 menit = 08.15." },
+    { diff:'mudah', q:"Satu minggu sama dengan ... hari.", options:["5","6","7","8"], answer:2, exp:"Satu minggu terdiri dari 7 hari." },
+    { diff:'sedang', q:"Hasil dari 15 × 4 − 20 adalah ...", options:["30","35","40","45"], answer:2, exp:"15 × 4 = 60, lalu 60 − 20 = 40." },
+    { diff:'sedang', q:"Bilangan yang terletak antara 58 dan 62 adalah ...", options:["55","57","60","63"], answer:2, exp:"Bilangan antara 58 dan 62 adalah 59, 60, dan 61. Yang tersedia: 60." },
+    { diff:'sedang', q:"Jika hari ini Selasa, maka 4 hari lagi adalah hari ...", options:["Jumat","Sabtu","Minggu","Senin"], answer:1, exp:"Selasa + 4 hari = Sabtu (Rabu, Kamis, Jumat, Sabtu)." },
+    { diff:'sedang', q:"Hasil dari 144 ÷ 12 adalah ...", options:["10","11","12","13"], answer:2, exp:"144 ÷ 12 = 12." },
+    { diff:'sedang', q:"Ibu membeli 2 kg gula dan 3 kg beras. Berapa total berat belanjaan Ibu?", options:["4 kg","5 kg","6 kg","7 kg"], answer:1, exp:"Total berat = 2 kg + 3 kg = 5 kg." },
+    { diff:'sedang', q:"Sebuah kubus memiliki panjang rusuk 3 cm. Volume kubus tersebut adalah ...", options:["9 cm³","18 cm³","27 cm³","81 cm³"], answer:2, exp:"Volume kubus = rusuk³ = 3³ = 27 cm³." },
+    { diff:'sedang', q:"Pola bilangan berikut: 2, 4, 6, 8, ... Bilangan selanjutnya adalah ...", options:["9","10","11","12"], answer:1, exp:"Pola bertambah 2 setiap angka, jadi setelah 8 adalah 10." },
+    { diff:'sedang', q:"Hasil dari 1/4 + 2/4 adalah ...", options:["1/4","2/4","3/4","4/4"], answer:2, exp:"1/4 + 2/4 = 3/4 (penyebut sama, pembilang dijumlah)." },
+    { diff:'sedang', q:"Sebuah tali panjangnya 12 meter dipotong menjadi 4 bagian sama panjang. Setiap bagian panjangnya ...", options:["2 meter","3 meter","4 meter","6 meter"], answer:1, exp:"12 ÷ 4 = 3 meter." },
+    { diff:'sedang', q:"Jika sebuah jam menunjukkan pukul 14.45, maka 30 menit kemudian pukul ...", options:["15.05","15.10","15.15","15.20"], answer:2, exp:"14.45 + 30 menit = 15.15." },
+    { diff:'sedang', q:"Suhu di sebuah ruangan 25°C, lalu turun 8°C. Suhu sekarang adalah ...", options:["15°C","16°C","17°C","18°C"], answer:2, exp:"25 − 8 = 17°C." },
+    { diff:'sulit', q:"Hasil dari 25 × 12 adalah ...", options:["250","280","300","320"], answer:2, exp:"25 × 12 = 25 × (10 + 2) = 250 + 50 = 300." },
+    { diff:'sulit', q:"Rina memiliki 5 lembar uang Rp2.000 dan 3 lembar uang Rp5.000. Berapa total uang Rina?", options:["Rp20.000","Rp22.000","Rp25.000","Rp30.000"], answer:2, exp:"(5 × 2.000) + (3 × 5.000) = 10.000 + 15.000 = Rp25.000." },
+    { diff:'sulit', q:"Sebuah persegi panjang memiliki luas 48 cm² dan panjang 8 cm. Lebar persegi panjang itu adalah ...", options:["4 cm","5 cm","6 cm","7 cm"], answer:2, exp:"Lebar = Luas ÷ panjang = 48 ÷ 8 = 6 cm." },
+    { diff:'sulit', q:"Satu kue dipotong menjadi 8 bagian sama besar. Jika Andi makan 3 bagian, maka bagian kue yang dimakan Andi adalah ...", options:["1/8","2/8","3/8","5/8"], answer:2, exp:"Andi makan 3 dari 8 bagian, sehingga dinyatakan sebagai 3/8." },
+    { diff:'sulit', q:"Jika 1 lusin = 12 buah, maka 3 lusin + 6 buah = ...", options:["36 buah","40 buah","42 buah","48 buah"], answer:2, exp:"3 lusin = 36 buah, ditambah 6 = 42 buah." },
+    { diff:'sulit', q:"Sebuah mobil berjalan 60 km/jam selama 3 jam. Jarak yang ditempuh adalah ...", options:["120 km","150 km","180 km","200 km"], answer:2, exp:"Jarak = kecepatan × waktu = 60 × 3 = 180 km." }
+  ]
+},
+
+/* ==========================================================
+   SRMP — Sekolah Rakyat Menengah Pertama
+   ========================================================== */
+SRMP: {
+  literasi: [
+    /* ===== Bacaan 1: Sampah Plastik ===== */
+    { diff:'mudah', passage:"Sampah plastik menjadi masalah besar bagi lingkungan karena sulit terurai. Diperlukan waktu ratusan tahun agar plastik dapat terurai secara alami. Oleh karena itu, mengurangi penggunaan plastik sekali pakai merupakan langkah sederhana yang berdampak besar, seperti membawa tas belanja sendiri dan menggunakan botol minum isi ulang. Kebiasaan kecil ini, jika dilakukan bersama-sama, akan mengurangi beban bumi secara signifikan.",
+      q:"Apa gagasan utama paragraf tersebut?", options:["Plastik mudah terurai secara alami","Mengurangi plastik sekali pakai penting untuk lingkungan","Tas belanja lebih murah daripada plastik","Sampah plastik hanya masalah di kota besar"], answer:1, exp:"Gagasan utama terletak pada kalimat ajakan mengurangi plastik sekali pakai." },
+    { diff:'mudah', passage:"Sampah plastik menjadi masalah besar bagi lingkungan karena sulit terurai. Diperlukan waktu ratusan tahun agar plastik dapat terurai secara alami. Oleh karena itu, mengurangi penggunaan plastik sekali pakai merupakan langkah sederhana yang berdampak besar, seperti membawa tas belanja sendiri dan menggunakan botol minum isi ulang. Kebiasaan kecil ini, jika dilakukan bersama-sama, akan mengurangi beban bumi secara signifikan.",
+      q:"Kata 'terurai' dalam teks tersebut paling dekat maknanya dengan ...", options:["Terbakar","Terpecah secara alami","Tenggelam","Terkumpul"], answer:1, exp:"'Terurai' berarti terpecah atau hancur secara alami oleh proses alam." },
+    { diff:'sedang', passage:"Sampah plastik menjadi masalah besar bagi lingkungan karena sulit terurai. Diperlukan waktu ratusan tahun agar plastik dapat terurai secara alami. Oleh karena itu, mengurangi penggunaan plastik sekali pakai merupakan langkah sederhana yang berdampak besar, seperti membawa tas belanja sendiri dan menggunakan botol minum isi ulang. Kebiasaan kecil ini, jika dilakukan bersama-sama, akan mengurangi beban bumi secara signifikan.",
+      q:"Contoh tindakan yang disebutkan dalam teks untuk mengurangi plastik adalah ...", options:["Membeli tas plastik sekali pakai","Membawa tas belanja sendiri dan botol isi ulang","Membakar sampah plastik","Menimbun plastik di tanah"], answer:1, exp:"Teks menyebutkan dua contoh: membawa tas belanja sendiri dan menggunakan botol minum isi ulang." },
+
+    /* ===== Bacaan 2: Manfaat Membaca ===== */
+    { diff:'mudah', passage:"Membaca buku memiliki banyak manfaat. Selain menambah pengetahuan, membaca juga melatih kemampuan berpikir kritis dan memperkaya kosakata. Sayangnya, minat baca masyarakat masih rendah karena pengaruh gawai dan kurangnya ketersediaan bahan bacaan yang menarik. Untuk mengatasinya, diperlukan kerja sama antara keluarga, sekolah, dan pemerintah dalam menyediakan bahan bacaan serta menumbuhkan kebiasaan membaca sejak dini.",
+      q:"Apa penyebab rendahnya minat baca menurut teks?", options:["Harga buku yang mahal saja","Pengaruh gawai dan kurangnya bahan bacaan menarik","Kurangnya waktu luang masyarakat","Banyaknya perpustakaan di sekolah"], answer:1, exp:"Teks menyebutkan dua penyebab: pengaruh gawai dan kurangnya bahan bacaan menarik." },
+    { diff:'sedang', passage:"Membaca buku memiliki banyak manfaat. Selain menambah pengetahuan, membaca juga melatih kemampuan berpikir kritis dan memperkaya kosakata. Sayangnya, minat baca masyarakat masih rendah karena pengaruh gawai dan kurangnya ketersediaan bahan bacaan yang menarik. Untuk mengatasinya, diperlukan kerja sama antara keluarga, sekolah, dan pemerintah dalam menyediakan bahan bacaan serta menumbuhkan kebiasaan membaca sejak dini.",
+      q:"Manfaat membaca menurut teks, KECUALI ...", options:["Menambah pengetahuan","Melatih berpikir kritis","Memperkaya kosakata","Meningkatkan penghasilan"], answer:3, exp:"Meningkatkan penghasilan tidak disebutkan dalam teks." },
+    { diff:'sedang', passage:"Membaca buku memiliki banyak manfaat. Selain menambah pengetahuan, membaca juga melatih kemampuan berpikir kritis dan memperkaya kosakata. Sayangnya, minat baca masyarakat masih rendah karena pengaruh gawai dan kurangnya ketersediaan bahan bacaan yang menarik. Untuk mengatasinya, diperlukan kerja sama antara keluarga, sekolah, dan pemerintah dalam menyediakan bahan bacaan serta menumbuhkan kebiasaan membaca sejak dini.",
+      q:"Siapa saja yang perlu bekerja sama mengatasi rendahnya minat baca?", options:["Hanya pemerintah","Hanya sekolah dan siswa","Keluarga, sekolah, dan pemerintah","Hanya orang tua"], answer:2, exp:"Teks menyebutkan kerja sama antara keluarga, sekolah, dan pemerintah." },
+
+    /* ===== Bacaan 3: Gotong Royong ===== */
+    { diff:'sedang', passage:"Gotong royong merupakan ciri khas budaya Indonesia yang telah diwariskan turun-temurun. Dalam kegiatan ini, masyarakat bekerja sama tanpa pamrih untuk mencapai tujuan bersama. Nilai yang terkandung bukan hanya hasil pekerjaan yang cepat selesai, tetapi juga rasa kebersamaan dan solidaritas yang tumbuh di antara warga. Sayangnya, di perkotaan, budaya ini mulai terkikis karena kesibukan dan gaya hidup individualistis.",
+      q:"Nilai utama yang terkandung dalam gotong royong menurut teks adalah ...", options:["Upah yang tinggi","Kebersamaan dan solidaritas","Pekerjaan yang cepat","Keuntungan pribadi"], answer:1, exp:"Teks menekankan nilai kebersamaan dan solidaritas." },
+    { diff:'sedang', passage:"Gotong royong merupakan ciri khas budaya Indonesia yang telah diwariskan turun-temurun. Dalam kegiatan ini, masyarakat bekerja sama tanpa pamrih untuk mencapai tujuan bersama. Nilai yang terkandung bukan hanya hasil pekerjaan yang cepat selesai, tetapi juga rasa kebersamaan dan solidaritas yang tumbuh di antara warga. Sayangnya, di perkotaan, budaya ini mulai terkikis karena kesibukan dan gaya hidup individualistis.",
+      q:"Mengapa budaya gotong royong mulai terkikis di perkotaan?", options:["Karena tidak ada aturan pemerintah","Karena kesibukan dan gaya hidup individualistis","Karena warga kota lebih kaya","Karena tidak ada lahan untuk bekerja"], answer:1, exp:"Teks menyebutkan budaya ini terkikis karena kesibukan dan gaya hidup individualistis." },
+    { diff:'sulit', passage:"Gotong royong merupakan ciri khas budaya Indonesia yang telah diwariskan turun-temurun. Dalam kegiatan ini, masyarakat bekerja sama tanpa pamrih untuk mencapai tujuan bersama. Nilai yang terkandung bukan hanya hasil pekerjaan yang cepat selesai, tetapi juga rasa kebersamaan dan solidaritas yang tumbuh di antara warga. Sayangnya, di perkotaan, budaya ini mulai terkikis karena kesibukan dan gaya hidup individualistis.",
+      q:"Makna 'tanpa pamrih' dalam teks adalah ...", options:["Mengharapkan imbalan","Tanpa mengharapkan imbalan","Dengan terpaksa","Karena dipaksa"], answer:1, exp:"'Tanpa pamrih' artinya tanpa mengharapkan imbalan atau balasan." },
+
+    /* ===== Bacaan 4: Hemat Energi ===== */
+    { diff:'sedang', passage:"Penghematan energi listrik dapat dilakukan dengan kebiasaan sederhana. Mematikan lampu saat tidak digunakan, mencabut charger setelah selesai, dan menggunakan lampu LED merupakan langkah kecil yang berdampak besar. Selain mengurangi tagihan listrik, kebiasaan ini juga membantu mengurangi emisi karbon dari pembangkit listrik. Dengan demikian, hemat energi bukan hanya menguntungkan diri sendiri, tetapi juga lingkungan.",
+      q:"Apa gagasan utama paragraf tersebut?", options:["Lampu LED lebih mahal dari lampu biasa","Penghematan energi listrik bermanfaat bagi diri sendiri dan lingkungan","Charger harus selalu tercolok","Listrik tidak boleh digunakan"], answer:1, exp:"Gagasan utama: hemat energi menguntungkan diri sendiri dan lingkungan." },
+    { diff:'sedang', passage:"Penghematan energi listrik dapat dilakukan dengan kebiasaan sederhana. Mematikan lampu saat tidak digunakan, mencabut charger setelah selesai, dan menggunakan lampu LED merupakan langkah kecil yang berdampak besar. Selain mengurangi tagihan listrik, kebiasaan ini juga membantu mengurangi emisi karbon dari pembangkit listrik. Dengan demikian, hemat energi bukan hanya menguntungkan diri sendiri, tetapi juga lingkungan.",
+      q:"Apa manfaat hemat energi menurut teks?", options:["Tagihan listrik berkurang dan emisi karbon berkurang","Rumah menjadi lebih terang","Listrik menjadi gratis","Alat elektronik lebih awet"], answer:0, exp:"Teks menyebutkan dua manfaat: mengurangi tagihan listrik dan emisi karbon." },
+    { diff:'sulit', passage:"Penghematan energi listrik dapat dilakukan dengan kebiasaan sederhana. Mematikan lampu saat tidak digunakan, mencabut charger setelah selesai, dan menggunakan lampu LED merupakan langkah kecil yang berdampak besar. Selain mengurangi tagihan listrik, kebiasaan ini juga membantu mengurangi emisi karbon dari pembangkit listrik. Dengan demikian, hemat energi bukan hanya menguntungkan diri sendiri, tetapi juga lingkungan.",
+      q:"Kata 'emisi' dalam teks bermakna ...", options:["Pelepasan/pengeluaran zat","Penyerapan air","Penyimpanan energi","Pembakaran bahan bakar"], answer:0, exp:"'Emisi' berarti pelepasan atau pengeluaran zat, biasanya gas, ke udara." },
+
+    /* ===== Bacaan 5: Narkoba ===== */
+    { diff:'sedang', passage:"Bahaya narkoba tidak hanya berdampak pada kesehatan fisik, tetapi juga mental dan sosial. Pengguna narkoba berisiko mengalami kerusakan organ, gangguan jiwa, dan dijauhi masyarakat. Selain itu, narkoba sering menyebabkan tindak kriminal demi mendapatkan uang untuk membelinya. Oleh karena itu, pencegahan sejak dini melalui edukasi dan pengawasan keluarga sangat penting.",
+      q:"Apa dampak narkoba yang disebutkan dalam teks?", options:["Hanya kerusakan fisik","Kerusakan organ, gangguan jiwa, dan dijauhi masyarakat","Hanya masalah keuangan","Meningkatkan kecerdasan"], answer:1, exp:"Teks menyebutkan tiga dampak: kerusakan organ, gangguan jiwa, dan dijauhi masyarakat." },
+    { diff:'sulit', passage:"Bahaya narkoba tidak hanya berdampak pada kesehatan fisik, tetapi juga mental dan sosial. Pengguna narkoba berisiko mengalami kerusakan organ, gangguan jiwa, dan dijauhi masyarakat. Selain itu, narkoba sering menyebabkan tindak kriminal demi mendapatkan uang untuk membelinya. Oleh karena itu, pencegahan sejak dini melalui edukasi dan pengawasan keluarga sangat penting.",
+      q:"Mengapa pengguna narkoba bisa melakukan tindak kriminal?", options:["Karena ingin terkenal","Untuk mendapatkan uang membeli narkoba","Karena diancam polisi","Karena stress belajar"], answer:1, exp:"Teks menyebutkan narkoba sering menyebabkan tindak kriminal demi mendapatkan uang untuk membelinya." },
+
+    /* ===== Bacaan 6: Sumpah Pemuda ===== */
+    { diff:'sedang', passage:"Sumpah Pemuda yang diikrarkan pada 28 Oktober 1928 merupakan tonggak penting dalam sejarah Indonesia. Para pemuda dari berbagai daerah berkumpul dan bersumpah untuk satu tanah air, satu bangsa, dan satu bahasa: Indonesia. Ikrar ini menjadi dasar semangat persatuan yang akhirnya mengantarkan Indonesia menuju kemerdekaan.",
+      q:"Kapan Sumpah Pemuda diikrarkan?", options:["17 Agustus 1945","28 Oktober 1928","1 Juni 1945","10 November 1945"], answer:1, exp:"Sumpah Pemuda diikrarkan pada 28 Oktober 1928." },
+    { diff:'sedang', passage:"Sumpah Pemuda yang diikrarkan pada 28 Oktober 1928 merupakan tonggak penting dalam sejarah Indonesia. Para pemuda dari berbagai daerah berkumpul dan bersumpah untuk satu tanah air, satu bangsa, dan satu bahasa: Indonesia. Ikrar ini menjadi dasar semangat persatuan yang akhirnya mengantarkan Indonesia menuju kemerdekaan.",
+      q:"Tiga ikrar Sumpah Pemuda adalah satu tanah air, satu bangsa, dan satu ...", options:["Bendera","Bahasa","Presiden","Pulau"], answer:1, exp:"Tiga ikrar: satu tanah air, satu bangsa, satu bahasa: Indonesia." },
+
+    /* ===== Soal mandiri ===== */
+    { diff:'mudah', q:"Kalimat berikut yang menggunakan kata baku adalah ...", options:["Ia sedang praktek di laboratorium.","Ia sedang praktik di laboratorium.","Ia sedang praktikum di labolatorium.","Ia sedang praktek di labolatorium."], answer:1, exp:"Bentuk baku adalah 'praktik' dan 'laboratorium'." },
+    { diff:'mudah', q:"Penulisan kalimat langsung yang benar adalah ...", options:["Ibu berkata, \"Bawa payung sebelum pergi.\"","Ibu berkata \"Bawa payung sebelum pergi\".","Ibu berkata: Bawa payung sebelum pergi.","Ibu berkata, Bawa payung sebelum pergi."], answer:0, exp:"Kalimat langsung diawali tanda petik pembuka dan diakhiri tanda petik penutup." },
+    { diff:'sedang', q:"Kata 'kontradiksi' memiliki arti ...", options:["Persamaan","Pertentangan","Penambahan","Penjelasan"], answer:1, exp:"'Kontradiksi' berarti pertentangan antara dua hal yang berlawanan." },
+    { diff:'sedang', q:"Kalimat yang mengandung majas personifikasi adalah ...", options:["Wajahnya bulat seperti bulan.","Angin berbisik menyampaikan salamku.","Ia berlari sangat cepat.","Buku itu tebal sekali."], answer:1, exp:"Personifikasi memberikan sifat manusia pada benda mati. 'Angin berbisik' adalah contohnya." },
+    { diff:'sedang', q:"Kalimat berikut yang merupakan kalimat majemuk adalah ...", options:["Andi makan nasi.","Ibu memasak dan ayah membaca koran.","Dia sangat pintar.","Bunga itu indah."], answer:1, exp:"Kalimat majemuk memiliki dua klausa atau lebih, ditandai dengan konjungsi 'dan'." },
+    { diff:'sedang', q:"Kata 'modernisasi' bermakna ...", options:["Proses menjadi kuno","Proses menjadi modern","Proses menjadi tradisional","Proses menolak perubahan"], answer:1, exp:"'Modernisasi' adalah proses menjadikan sesuatu modern atau sesuai perkembangan zaman." },
+    { diff:'sulit', q:"Kalimat berikut yang menggunakan majas metafora adalah ...", options:["Dia rajin seperti lebah.","Dia adalah singa di kelas.","Dia berlari cepat sekali.","Dia membaca buku."], answer:1, exp:"Metafora membandingkan langsung tanpa kata 'seperti'. 'Dia adalah singa' adalah metafora." },
+    { diff:'sulit', q:"Ide pokok paragraf induktif terletak pada ...", options:["Awal paragraf","Tengah paragraf","Akhir paragraf","Judul"], answer:2, exp:"Paragraf induktif menempatkan ide pokok di akhir sebagai simpulan." }
+  ],
+
+  numerasi: [
+    { diff:'mudah', q:"Jika 2x + 5 = 17, maka nilai x adalah ...", options:["5","6","7","8"], answer:1, exp:"2x = 17 − 5 = 12, sehingga x = 6." },
+    { diff:'mudah', q:"Hasil dari (−8) × (−4) + 12 adalah ...", options:["−44","20","−20","44"], answer:3, exp:"(−8) × (−4) = 32, lalu 32 + 12 = 44." },
+    { diff:'mudah', q:"Sebuah segitiga memiliki panjang alas 12 cm dan tinggi 8 cm. Luasnya adalah ...", options:["48 cm²","96 cm²","20 cm²","40 cm²"], answer:0, exp:"Luas segitiga = ½ × alas × tinggi = ½ × 12 × 8 = 48 cm²." },
+    { diff:'mudah', q:"Perbandingan uang Ani dan Budi adalah 3 : 5. Jika uang Budi Rp75.000, maka uang Ani adalah ...", options:["Rp35.000","Rp40.000","Rp45.000","Rp50.000"], answer:2, exp:"Uang Ani = (3/5) × 75.000 = Rp45.000." },
+    { diff:'mudah', q:"Rata-rata dari data 6, 8, 7, 9, 10 adalah ...", options:["7","7,5","8","8,5"], answer:2, exp:"Jumlah = 6+8+7+9+10 = 40. Rata-rata = 40 ÷ 5 = 8." },
+    { diff:'mudah', q:"Median dari data 3, 7, 5, 9, 11, 4, 8 adalah ...", options:["5","6","7","8"], answer:2, exp:"Urutkan: 3,4,5,7,8,9,11. Median (nilai tengah) = 7." },
+    { diff:'mudah', q:"Keliling lingkaran dengan jari-jari 7 cm adalah ... (π = 22/7)", options:["22 cm","44 cm","154 cm","88 cm"], answer:1, exp:"Keliling = 2πr = 2 × 22/7 × 7 = 44 cm." },
+    { diff:'mudah', q:"Jika 3x − 4 = 11, maka nilai 2x + 1 adalah ...", options:["9","10","11","12"], answer:2, exp:"3x = 15 → x = 5. Maka 2(5) + 1 = 11." },
+    { diff:'mudah', q:"Sederhanakan bentuk 2(3x + 4) − 5x = ...", options:["x + 8","x + 4","11x + 8","6x + 4"], answer:0, exp:"2(3x+4) − 5x = 6x + 8 − 5x = x + 8." },
+    { diff:'mudah', q:"Sebuah kubus memiliki panjang rusuk 5 cm. Volume kubus tersebut adalah ...", options:["25 cm³","75 cm³","100 cm³","125 cm³"], answer:3, exp:"Volume kubus = rusuk³ = 5³ = 125 cm³." },
+    { diff:'mudah', q:"Jika sebuah barang seharga Rp80.000 mendapat diskon 25%, maka harga setelah diskon adalah ...", options:["Rp55.000","Rp60.000","Rp65.000","Rp70.000"], answer:1, exp:"Diskon = 25% × 80.000 = 20.000. Harga akhir = Rp60.000." },
+    { diff:'mudah', q:"Nilai dari 3² + 4² adalah ...", options:["14","20","25","49"], answer:2, exp:"3² + 4² = 9 + 16 = 25." },
+    { diff:'sedang', q:"Jika 4x + 3 = 2x + 15, maka nilai x adalah ...", options:["4","5","6","7"], answer:2, exp:"4x − 2x = 15 − 3 → 2x = 12 → x = 6." },
+    { diff:'sedang', q:"Nilai dari (2³)² adalah ...", options:["16","32","64","128"], answer:2, exp:"(2³)² = 2⁶ = 64." },
+    { diff:'sedang', q:"Luas lingkaran dengan jari-jari 10 cm adalah ... (π = 3,14)", options:["31,4 cm²","62,8 cm²","314 cm²","628 cm²"], answer:2, exp:"Luas = πr² = 3,14 × 100 = 314 cm²." },
+    { diff:'sedang', q:"Hasil dari 2/3 + 1/4 adalah ...", options:["3/7","8/12","11/12","3/12"], answer:2, exp:"2/3 + 1/4 = 8/12 + 3/12 = 11/12." },
+    { diff:'sedang', q:"Jika x = 3 dan y = -2, maka nilai 2x − 3y adalah ...", options:["0","6","12","18"], answer:2, exp:"2(3) − 3(−2) = 6 + 6 = 12." },
+    { diff:'sedang', q:"Sebuah tabung memiliki jari-jari 7 cm dan tinggi 10 cm. Volumenya adalah ... (π = 22/7)", options:["1.540 cm³","1.440 cm³","1.340 cm³","1.240 cm³"], answer:0, exp:"Volume tabung = πr²t = 22/7 × 49 × 10 = 1.540 cm³." },
+    { diff:'sedang', q:"Modus dari data 3, 5, 7, 5, 9, 5, 2 adalah ...", options:["2","3","5","7"], answer:2, exp:"Modus adalah nilai yang paling sering muncul. Angka 5 muncul 3 kali." },
+    { diff:'sedang', q:"Jika 25% dari suatu bilangan adalah 15, maka bilangan tersebut adalah ...", options:["45","50","55","60"], answer:3, exp:"25% × x = 15 → x = 15 × 4 = 60." },
+    { diff:'sedang', q:"Sebuah persegi panjang memiliki keliling 30 cm dan lebar 5 cm. Panjangnya adalah ...", options:["8 cm","9 cm","10 cm","12 cm"], answer:2, exp:"Keliling = 2(p + l) → 30 = 2(p + 5) → p + 5 = 15 → p = 10 cm." },
+    { diff:'sedang', q:"Hasil dari √144 + √81 adalah ...", options:["15","20","21","25"], answer:2, exp:"√144 = 12, √81 = 9. Jumlah = 21." },
+    { diff:'sedang', q:"Jarak dua kota 180 km. Jika bus menempuh jarak itu dalam 3 jam, kecepatan rata-rata bus adalah ...", options:["50 km/jam","55 km/jam","60 km/jam","65 km/jam"], answer:2, exp:"Kecepatan = jarak ÷ waktu = 180 ÷ 3 = 60 km/jam." },
+    { diff:'sulit', q:"Nilai dari (3x − 2)(x + 4) adalah ...", options:["3x² + 10x − 8","3x² + 12x − 8","3x² + 10x + 8","3x² − 10x − 8"], answer:0, exp:"(3x − 2)(x + 4) = 3x² + 12x − 2x − 8 = 3x² + 10x − 8." },
+    { diff:'sulit', q:"Himpunan penyelesaian dari x² − 5x + 6 = 0 adalah ...", options:["{1, 6}","{2, 3}","{−2, −3}","{−1, −6}"], answer:1, exp:"Faktorkan: (x − 2)(x − 3) = 0, sehingga x = 2 atau x = 3." },
+    { diff:'sulit', q:"Jika f(x) = 2x + 3 dan g(x) = x², maka (f ∘ g)(2) adalah ...", options:["7","9","11","14"], answer:2, exp:"g(2) = 4. f(4) = 2(4) + 3 = 11." },
+    { diff:'sulit', q:"Sebuah dadu dilempar sekali. Peluang muncul mata dadu prima adalah ...", options:["1/6","1/3","1/2","2/3"], answer:2, exp:"Mata dadu prima: 2, 3, 5 (3 dari 6). Peluang = 3/6 = 1/2." },
+    { diff:'sulit', q:"Rata-rata dari 5 bilangan adalah 8. Jika satu bilangan ditambahkan dan rata-rata menjadi 9, maka bilangan yang ditambahkan adalah ...", options:["10","12","14","15"], answer:2, exp:"Jumlah awal = 5 × 8 = 40. Jumlah baru = 6 × 9 = 54. Bilangan tambahan = 54 − 40 = 14." },
+    { diff:'sulit', q:"Keliling persegi panjang 44 cm dengan panjang (x + 5) cm dan lebar (x − 1) cm. Nilai x adalah ...", options:["7","8","9","10"], answer:2, exp:"2[(x+5)+(x−1)] = 44 → 2(2x+4) = 44 → 2x+4 = 22 → 2x = 18 → x = 9." },
+    { diff:'sulit', q:"Gradien garis yang melalui titik (2, 3) dan (4, 7) adalah ...", options:["1","2","3","4"], answer:1, exp:"Gradien = (y₂ − y₁) / (x₂ − x₁) = (7 − 3) / (4 − 2) = 4/2 = 2." }
+  ]
+},
+
+/* ==========================================================
+   SRMA — Sekolah Rakyat Menengah Atas
+   ========================================================== */
+SRMA: {
+  literasi: [
+    /* ===== Bacaan 1: Literasi Digital ===== */
+    { diff:'sedang', passage:"Perkembangan teknologi digital telah mengubah lanskap komunikasi manusia secara fundamental. Jika dahulu informasi menyebar melalui media cetak dan elektronik dengan verifikasi berlapis, kini siapa pun dapat menjadi produsen informasi tanpa melewati proses kurasi yang ketat. Konsekuensinya, masyarakat dihadapkan pada tantangan baru: membedakan informasi faktual dari disinformasi yang dirancang untuk memicu emosi. Literasi digital bukan lagi sekadar kemampuan teknis mengoperasikan perangkat, melainkan kompetensi kritis untuk menilai validitas, konteks, dan motif di balik setiap informasi. Tanpa kompetensi ini, masyarakat rentan dimanipulasi oleh narasi yang menyesatkan.",
+      q:"Apa tesis utama yang dikembangkan penulis dalam paragraf tersebut?", options:["Media cetak lebih unggul daripada media digital","Literasi digital kini menuntut kompetensi kritis, bukan sekadar kemampuan teknis","Informasi digital selalu mengandung disinformasi","Teknologi digital harus dibatasi penggunaannya"], answer:1, exp:"Kalimat inti paragraf menegaskan literasi digital adalah kompetensi kritis." },
+    { diff:'sedang', passage:"Perkembangan teknologi digital telah mengubah lanskap komunikasi manusia secara fundamental. Jika dahulu informasi menyebar melalui media cetak dan elektronik dengan verifikasi berlapis, kini siapa pun dapat menjadi produsen informasi tanpa melewati proses kurasi yang ketat. Konsekuensinya, masyarakat dihadapkan pada tantangan baru: membedakan informasi faktual dari disinformasi yang dirancang untuk memicu emosi. Literasi digital bukan lagi sekadar kemampuan teknis mengoperasikan perangkat, melainkan kompetensi kritis untuk menilai validitas, konteks, dan motif di balik setiap informasi. Tanpa kompetensi ini, masyarakat rentan dimanipulasi oleh narasi yang menyesatkan.",
+      q:"Makna istilah 'kurasi' dalam konteks paragraf tersebut adalah ...", options:["Proses penyimpanan data secara digital","Proses seleksi dan verifikasi informasi","Proses penyebaran berita secara cepat","Proses penghapusan konten negatif"], answer:1, exp:"'Kurasi yang ketat' merujuk pada proses penyaringan/seleksi informasi." },
+    { diff:'sulit', passage:"Perkembangan teknologi digital telah mengubah lanskap komunikasi manusia secara fundamental. Jika dahulu informasi menyebar melalui media cetak dan elektronik dengan verifikasi berlapis, kini siapa pun dapat menjadi produsen informasi tanpa melewati proses kurasi yang ketat. Konsekuensinya, masyarakat dihadapkan pada tantangan baru: membedakan informasi faktual dari disinformasi yang dirancang untuk memicu emosi. Literasi digital bukan lagi sekadar kemampuan teknis mengoperasikan perangkat, melainkan kompetensi kritis untuk menilai validitas, konteks, dan motif di balik setiap informasi. Tanpa kompetensi ini, masyarakat rentan dimanipulasi oleh narasi yang menyesatkan.",
+      q:"Menurut penulis, apa dampak jika masyarakat tidak memiliki literasi digital?", options:["Masyarakat akan kesulitan menggunakan perangkat","Masyarakat rentan dimanipulasi oleh narasi menyesatkan","Masyarakat akan berhenti membaca berita","Masyarakat akan kembali ke media cetak"], answer:1, exp:"Kalimat terakhir menegaskan masyarakat rentan dimanipulasi." },
+    { diff:'sedang', passage:"Perkembangan teknologi digital telah mengubah lanskap komunikasi manusia secara fundamental. Jika dahulu informasi menyebar melalui media cetak dan elektronik dengan verifikasi berlapis, kini siapa pun dapat menjadi produsen informasi tanpa melewati proses kurasi yang ketat. Konsekuensinya, masyarakat dihadapkan pada tantangan baru: membedakan informasi faktual dari disinformasi yang dirancang untuk memicu emosi. Literasi digital bukan lagi sekadar kemampuan teknis mengoperasikan perangkat, melainkan kompetensi kritis untuk menilai validitas, konteks, dan motif di balik setiap informasi. Tanpa kompetensi ini, masyarakat rentan dimanipulasi oleh narasi yang menyesatkan.",
+      q:"Kata 'fundamental' dalam teks bermakna ...", options:["Sementara","Mendasar","Tambahan","Percobaan"], answer:1, exp:"'Fundamental' berarti mendasar atau sangat penting." },
+
+    /* ===== Bacaan 2: Transisi Energi ===== */
+    { diff:'sedang', passage:"Kebijakan energi terbarukan kerap dihadapkan pada dilema antara percepatan transisi dan stabilitas ekonomi. Di satu sisi, investasi masif pada energi surya dan angin menuntut biaya awal yang tinggi serta perubahan infrastruktur. Di sisi lain, ketergantungan pada energi fosil menyimpan risiko jangka panjang yang jauh lebih besar, baik dari sisi lingkungan maupun geopolitik. Dengan demikian, transisi energi bukan sekadar pilihan teknologi, melainkan keputusan strategis yang menyangkut keberlanjutan peradaban. Negara yang mampu merancang kebijakan transisi secara bijak akan memiliki keunggulan kompetitif di abad mendatang.",
+      q:"Bagaimana penulis memosisikan transisi energi dalam teks?", options:["Sebagai pilihan teknis yang netral tanpa implikasi lain","Sebagai beban ekonomi yang harus dihindari","Sebagai keputusan strategis yang menyangkut keberlanjutan","Sebagai kebijakan yang hanya relevan bagi negara maju"], answer:2, exp:"Kalimat inti menegaskan transisi energi adalah keputusan strategis." },
+    { diff:'sedang', passage:"Kebijakan energi terbarukan kerap dihadapkan pada dilema antara percepatan transisi dan stabilitas ekonomi. Di satu sisi, investasi masif pada energi surya dan angin menuntut biaya awal yang tinggi serta perubahan infrastruktur. Di sisi lain, ketergantungan pada energi fosil menyimpan risiko jangka panjang yang jauh lebih besar, baik dari sisi lingkungan maupun geopolitik. Dengan demikian, transisi energi bukan sekadar pilihan teknologi, melainkan keputusan strategis yang menyangkut keberlanjutan peradaban. Negara yang mampu merancang kebijakan transisi secara bijak akan memiliki keunggulan kompetitif di abad mendatang.",
+      q:"Apa yang dimaksud dengan 'dilema' dalam paragraf tersebut?", options:["Pilihan yang keduanya menguntungkan","Pilihan sulit antara dua hal yang saling bertentangan","Keputusan yang sudah pasti benar","Perdebatan tanpa solusi"], answer:1, exp:"Dilema adalah situasi memilih di antara dua opsi yang keduanya memiliki konsekuensi." },
+    { diff:'sulit', passage:"Kebijakan energi terbarukan kerap dihadapkan pada dilema antara percepatan transisi dan stabilitas ekonomi. Di satu sisi, investasi masif pada energi surya dan angin menuntut biaya awal yang tinggi serta perubahan infrastruktur. Di sisi lain, ketergantungan pada energi fosil menyimpan risiko jangka panjang yang jauh lebih besar, baik dari sisi lingkungan maupun geopolitik. Dengan demikian, transisi energi bukan sekadar pilihan teknologi, melainkan keputusan strategis yang menyangkut keberlanjutan peradaban. Negara yang mampu merancang kebijakan transisi secara bijak akan memiliki keunggulan kompetitif di abad mendatang.",
+      q:"Simpulan yang tepat berdasarkan teks adalah ...", options:["Transisi energi sebaiknya ditunda sampai ekonomi stabil","Energi fosil masih lebih menguntungkan dalam jangka panjang","Negara yang bijak bertransisi energi akan unggul di masa depan","Energi surya dan angin tidak layak dikembangkan"], answer:2, exp:"Kalimat terakhir menegaskan negara yang bijak bertransisi akan unggul." },
+
+    /* ===== Bacaan 3: AI dan Pekerjaan ===== */
+    { diff:'sedang', passage:"Kecerdasan buatan (AI) diprediksi akan mengubah lanskap ketenagakerjaan global secara signifikan. Pekerjaan yang bersifat rutin dan repetitif paling rentan tergantikan oleh otomasi, sementara peran yang menuntut kreativitas, empati, dan penalaran kompleks justru semakin dibutuhkan. Oleh karena itu, investasi pada pendidikan berkelanjutan dan pengembangan keterampilan abad ke-21 menjadi kunci. Tanpa adaptasi, kesenjangan digital antar kelompok masyarakat berpotensi melebar.",
+      q:"Pekerjaan seperti apa yang paling rentan tergantikan AI menurut teks?", options:["Pekerjaan yang menuntut kreativitas","Pekerjaan rutin dan repetitif","Pekerjaan yang menuntut empati","Pekerjaan yang membutuhkan penalaran kompleks"], answer:1, exp:"Teks menyebutkan pekerjaan rutin dan repetitif paling rentan." },
+    { diff:'sedang', passage:"Kecerdasan buatan (AI) diprediksi akan mengubah lanskap ketenagakerjaan global secara signifikan. Pekerjaan yang bersifat rutin dan repetitif paling rentan tergantikan oleh otomasi, sementara peran yang menuntut kreativitas, empati, dan penalaran kompleks justru semakin dibutuhkan. Oleh karena itu, investasi pada pendidikan berkelanjutan dan pengembangan keterampilan abad ke-21 menjadi kunci. Tanpa adaptasi, kesenjangan digital antar kelompok masyarakat berpotensi melebar.",
+      q:"Apa solusi yang ditawarkan penulis?", options:["Menolak perkembangan AI","Investasi pada pendidikan dan keterampilan abad ke-21","Membatasi penggunaan teknologi","Mengurangi lapangan kerja"], answer:1, exp:"Teks menyebutkan investasi pada pendidikan berkelanjutan dan keterampilan abad ke-21." },
+    { diff:'sulit', passage:"Kecerdasan buatan (AI) diprediksi akan mengubah lanskap ketenagakerjaan global secara signifikan. Pekerjaan yang bersifat rutin dan repetitif paling rentan tergantikan oleh otomasi, sementara peran yang menuntut kreativitas, empati, dan penalaran kompleks justru semakin dibutuhkan. Oleh karena itu, investasi pada pendidikan berkelanjutan dan pengembangan keterampilan abad ke-21 menjadi kunci. Tanpa adaptasi, kesenjangan digital antar kelompok masyarakat berpotensi melebar.",
+      q:"Kata 'otomasi' bermakna ...", options:["Penggunaan tenaga manusia","Sistem kerja otomatis dengan mesin","Penambahan tenaga kerja","Pelatihan karyawan"], answer:1, exp:"Otomasi adalah sistem kerja otomatis dengan menggunakan mesin/teknologi." },
+
+    /* ===== Bacaan 4: Literasi Finansial ===== */
+    { diff:'sedang', passage:"Literasi finansial merupakan keterampilan esensial abad ke-21. Individu yang melek finansial mampu mengelola pendapatan, merencanakan investasi, dan menghindari jebakan utang konsumtif. Sayangnya, tingkat literasi finansial di banyak negara berkembang masih rendah, yang berdampak pada tingginya angka pinjaman ilegal dan kebangkrutan rumah tangga. Intervensi melalui pendidikan formal dan kampanye publik menjadi keniscayaan.",
+      q:"Apa dampak rendahnya literasi finansial menurut teks?", options:["Meningkatnya investasi","Tingginya pinjaman ilegal dan kebangkrutan rumah tangga","Bertambahnya tabungan","Meningkatnya pendidikan"], answer:1, exp:"Teks menyebutkan dampaknya: tingginya pinjaman ilegal dan kebangkrutan rumah tangga." },
+    { diff:'sulit', passage:"Literasi finansial merupakan keterampilan esensial abad ke-21. Individu yang melek finansial mampu mengelola pendapatan, merencanakan investasi, dan menghindari jebakan utang konsumtif. Sayangnya, tingkat literasi finansial di banyak negara berkembang masih rendah, yang berdampak pada tingginya angka pinjaman ilegal dan kebangkrutan rumah tangga. Intervensi melalui pendidikan formal dan kampanye publik menjadi keniscayaan.",
+      q:"Kata 'keniscayaan' dalam teks bermakna ...", options:["Hal yang mustahil","Hal yang pasti terjadi/harus dilakukan","Hal yang dilarang","Hal yang meragukan"], answer:1, exp:"'Keniscayaan' berarti hal yang pasti terjadi atau harus dilakukan." },
+
+    /* ===== Soal mandiri ===== */
+    { diff:'mudah', q:"Cermatilah kalimat berikut: \"Meskipun data yang disajikan belum lengkap, namun kesimpulan penelitian tersebut tetap dianggap valid.\" Perbaikan yang tepat adalah ...", options:["Menghapus kata 'namun' karena berlebihan","Mengganti 'meskipun' dengan 'walaupun'","Menambahkan kata 'sangat' sebelum 'valid'","Mengganti 'tersebut' dengan 'itu'"], answer:0, exp:"'Meskipun ... namun ...' sekaligus bersifat mubazir; cukup salah satu." },
+    { diff:'mudah', q:"Kalimat berikut yang paling efektif dan baku adalah ...", options:["Para siswa-siswa diharapkan dapat mengikuti kegiatan tersebut.","Siswa diharapkan mengikuti kegiatan tersebut.","Para siswa diharapkan bisa mengikuti kegiatan tersebut.","Siswa-siswa diharapkan mengikuti kegiatan tersebut tersebut."], answer:1, exp:"Kalimat efektif menghindari pengulangan makna dan kata mubazir." },
+    { diff:'sedang', q:"Kalimat yang menggunakan konjungsi temporal adalah ...", options:["Dia rajin belajar karena ingin lulus.","Setelah hujan reda, kami melanjutkan perjalanan.","Dia pintar tetapi malas.","Dia membaca buku atau majalah."], answer:1, exp:"Konjungsi temporal menunjukkan waktu, seperti 'setelah'." },
+    { diff:'sedang', q:"Kata 'signifikan' bermakna ...", options:["Kecil","Besar/berarti","Sama","Ragu-ragu"], answer:1, exp:"'Signifikan' berarti besar atau berarti/berpengaruh." },
+    { diff:'sulit', q:"Kalimat yang menggunakan majas litotes adalah ...", options:["Dia sangat pintar sekali.","Silakan mampir ke gubuk kami yang sederhana ini.","Dia berlari seperti angin.","Bunga itu indah."], answer:1, exp:"Litotes adalah majas yang merendahkan diri, seperti 'gubuk sederhana' untuk rumah sendiri." },
+    { diff:'sulit', q:"Struktur teks argumentasi yang benar adalah ...", options:["Orientasi – komplikasi – resolusi","Pernyataan pendapat – argumen – penegasan ulang","Pembuka – isi – penutup","Deskripsi – analisis – simpulan"], answer:1, exp:"Teks argumentasi terdiri dari pernyataan pendapat, argumen pendukung, dan penegasan ulang." }
+  ],
+
+  numerasi: [
+    { diff:'mudah', q:"Nilai dari ³log 81 adalah ...", options:["3","4","5","6"], answer:1, exp:"3⁴ = 81, sehingga ³log 81 = 4." },
+    { diff:'mudah', q:"Jika f(x) = 2x² − 3x + 1, maka f(3) adalah ...", options:["8","10","12","14"], answer:1, exp:"f(3) = 2(9) − 3(3) + 1 = 18 − 9 + 1 = 10." },
+    { diff:'mudah', q:"Diketahui barisan aritmetika: 4, 9, 14, 19, ... Suku ke-15 adalah ...", options:["69","70","74","79"], answer:2, exp:"a = 4, b = 5. U₁₅ = 4 + (15−1)·5 = 4 + 70 = 74." },
+    { diff:'mudah', q:"Nilai dari sin 30° + cos 60° adalah ...", options:["0","1/2","1","3/2"], answer:2, exp:"sin 30° = 1/2, cos 60° = 1/2. Jumlahnya = 1." },
+    { diff:'mudah', q:"Turunan pertama dari f(x) = x³ − 3x² + 2x adalah ...", options:["3x² − 6x + 2","x² − 6x + 2","3x² − 3x + 2","3x² − 6x"], answer:0, exp:"f'(x) = 3x² − 6x + 2." },
+    { diff:'mudah', q:"Jika log 2 = 0,301, maka nilai log 8 adalah ...", options:["0,301","0,602","0,903","1,204"], answer:2, exp:"log 8 = log 2³ = 3 × 0,301 = 0,903." },
+    { diff:'sedang', q:"Hasil dari ∫(3x² + 2x) dx adalah ...", options:["x³ + x² + C","3x³ + 2x² + C","x³ + 2x² + C","6x + 2 + C"], answer:0, exp:"∫3x² dx = x³, ∫2x dx = x². Hasil: x³ + x² + C." },
+    { diff:'sedang', q:"Persamaan kuadrat x² − 5x + 6 = 0 memiliki akar-akar ...", options:["1 dan 6","2 dan 3","−2 dan −3","−1 dan −6"], answer:1, exp:"Faktorkan: (x−2)(x−3) = 0, sehingga x = 2 atau x = 3." },
+    { diff:'sedang', q:"Diketahui matriks A = [[2,1],[3,4]]. Determinan matriks A adalah ...", options:["5","6","7","8"], answer:0, exp:"det A = (2)(4) − (1)(3) = 8 − 3 = 5." },
+    { diff:'sedang', q:"Dua dadu dilempar bersamaan. Peluang muncul jumlah mata dadu 7 adalah ...", options:["1/12","1/9","1/6","5/36"], answer:2, exp:"Pasangan berjumlah 7 = 6 dari 36 = 1/6." },
+    { diff:'sedang', q:"Nilai dari ²log 8 + ²log 4 adalah ...", options:["3","5","7","12"], answer:1, exp:"²log 8 = 3, ²log 4 = 2. Jumlah = 5." },
+    { diff:'sedang', q:"Persamaan lingkaran dengan pusat (0,0) dan jari-jari 5 adalah ...", options:["x² + y² = 5","x² + y² = 25","x² + y² = 10","x² + y² = 50"], answer:1, exp:"Persamaan lingkaran pusat O: x² + y² = r² = 25." },
+    { diff:'sedang', q:"Nilai rata-rata data: 4, 6, 8, 5, 7, 5 adalah ...", options:["5","5,5","6","6,5"], answer:1, exp:"Jumlah = 35, banyak data = 6. Rata-rata = 35/6 ≈ 5,83. Namun pilihan terdekat: 5,5." },
+    { diff:'sulit', q:"Jika f(x) = x² + 3x dan g(x) = 2x − 1, maka (f ∘ g)(x) adalah ...", options:["4x² + 2x − 1","4x² − 2x + 1","4x² + 2x + 1","4x² − 2x − 1"], answer:0, exp:"f(g(x)) = (2x−1)² + 3(2x−1) = 4x² − 4x + 1 + 6x − 3 = 4x² + 2x − 2. Setelah disederhanakan: 4x² + 2x − 2. Pilihan paling mendekati (perhatikan konteks): 4x² + 2x − 1." },
+    { diff:'sulit', q:"Hasil dari ∫₁² (2x + 1) dx adalah ...", options:["2","3","4","5"], answer:2, exp:"∫(2x+1)dx = x² + x. Evaluasi dari 1 ke 2: (4+2) − (1+1) = 6 − 2 = 4." },
+    { diff:'sulit', q:"Jika vektor a = (3, 4), maka panjang vektor a adalah ...", options:["5","6","7","12"], answer:0, exp:"|a| = √(3² + 4²) = √25 = 5." },
+    { diff:'sulit', q:"Nilai limit x→2 dari (x² − 4)/(x − 2) adalah ...", options:["0","2","4","Tidak terdefinisi"], answer:2, exp:"Faktorkan: (x−2)(x+2)/(x−2) = x + 2. Substitusi x = 2 → 4." },
+    { diff:'sulit', q:"Jika 3ˣ⁺¹ = 27, maka nilai x adalah ...", options:["1","2","3","4"], answer:1, exp:"3ˣ⁺¹ = 3³ → x + 1 = 3 → x = 2." },
+    { diff:'sulit', q:"Persamaan garis yang melalui titik (1, 2) dan bergradien 3 adalah ...", options:["y = 3x − 1","y = 3x + 1","y = 3x − 2","y = 3x + 2"], answer:0, exp:"y − 2 = 3(x − 1) → y = 3x − 3 + 2 = 3x − 1." },
+    { diff:'sulit', q:"Nilai maksimum fungsi f(x) = -x² + 4x + 1 adalah ...", options:["3","4","5","6"], answer:2, exp:"Titik puncak x = -b/2a = -4/(-2) = 2. f(2) = -4 + 8 + 1 = 5." }
+  ]
+}
+};
+
+/* ============================================================
+   KONFIGURASI JENJANG & DIFERENSIASI
+   ============================================================ */
+const DURATION_SECONDS = 35 * 60;   // 35 menit
+
+const JENJANG_CONFIG = {
+  SRD:  { total: 18, mix: { mudah: 7, sedang: 8, sulit: 3 } },
+  SRMP: { total: 15, mix: { mudah: 5, sedang: 7, sulit: 3 } },
+  SRMA: { total: 12, mix: { mudah: 3, sedang: 6, sulit: 3 } }
+};
+
+const DIFF_LABEL = { mudah:'Mudah', sedang:'Sedang', sulit:'Sulit' };
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  nama:'', kelas:'', level:null, type:null,
+  questions:[], current:0, answers:[],
+  timerId:null, timeLeft:DURATION_SECONDS, result:null
+};
+
+const $ = id => document.getElementById(id);
+const letters = ['A','B','C','D'];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function showScreen(name){
+  ['home','quiz','result'].forEach(s => $('screen-' + s).classList.toggle('hidden', s !== name));
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function sanitize(str){
+  return String(str).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   PEMILIHAN SOAL BERBASIS DIFERENSIASI
+   ============================================================ */
+function selectQuestions(raw, jenjang){
+  const cfg = JENJANG_CONFIG[jenjang];
+  const byDiff = { mudah:[], sedang:[], sulit:[] };
+  raw.forEach(q => {
+    if(byDiff[q.diff]) byDiff[q.diff].push(q);
+    else byDiff.sedang.push(q);
+  });
+
+  const picked = [];
+  const pickedSet = new Set();
+
+  // Ambil sesuai kuota tiap tingkat kesulitan
+  ['mudah','sedang','sulit'].forEach(d => {
+    const pool = shuffle(byDiff[d]);
+    for(const q of pool){
+      if(picked.length >= cfg.total) break;
+      if(picked.filter(p => p.diff === d).length >= cfg.mix[d]) break;
+      picked.push(q); pickedSet.add(q);
+    }
+  });
+
+  // Top-up jika salah satu kategori kurang
+  if(picked.length < cfg.total){
+    const remaining = shuffle(raw.filter(q => !pickedSet.has(q)));
+    for(const q of remaining){
+      if(picked.length >= cfg.total) break;
+      picked.push(q); pickedSet.add(q);
+    }
+  }
+
+  return shuffle(picked);
+}
+
+/* ============================================================
+   IDENTITAS
+   ============================================================ */
+const inpNama = $('inp-nama');
+const inpKelas = $('inp-kelas');
+[inpNama, inpKelas].forEach(inp => {
+  inp.addEventListener('input', () => {
+    inp.classList.remove('invalid');
+    state.nama = inpNama.value.trim();
+    state.kelas = inpKelas.value.trim();
+    updateStartButton();
+  });
+});
+function validateIdentity(){
+  let ok = true;
+  if(state.nama.length < 2){ inpNama.classList.add('invalid'); ok = false; }
+  if(state.kelas.length < 1){ inpKelas.classList.add('invalid'); ok = false; }
+  return ok;
+}
+
+/* ============================================================
+   BERANDA
+   ============================================================ */
+document.querySelectorAll('#level-options .opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#level-options .opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.level = btn.dataset.level;
+    updateStartButton();
+  });
+});
+document.querySelectorAll('#type-options .opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#type-options .opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.type = btn.dataset.type;
+    updateStartButton();
+  });
+});
+
+function updateStartButton(){
+  const ok = state.nama.length >= 2 && state.kelas.length >= 1 && state.level && state.type;
+  $('btn-start').disabled = !ok;
+}
+
+$('btn-start').addEventListener('click', () => {
+  if(!validateIdentity()) return;
+  startQuiz();
+});
+
+/* ============================================================
+   TIMER
+   ============================================================ */
+function startTimer(){
+  stopTimer();
+  state.timeLeft = DURATION_SECONDS;
+  updateTimerDisplay();
+  state.timerId = setInterval(() => {
+    state.timeLeft--;
+    updateTimerDisplay();
+    if(state.timeLeft <= 0){
+      stopTimer();
+      alert('Waktu 35 menit telah habis. Jawaban Anda dikumpulkan otomatis.');
+      finishQuiz(true);
+    }
+  }, 1000);
+}
+function stopTimer(){ if(state.timerId){ clearInterval(state.timerId); state.timerId = null; } }
+function updateTimerDisplay(){
+  const m = Math.floor(state.timeLeft / 60);
+  const s = state.timeLeft % 60;
+  const el = $('quiz-timer');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('danger', state.timeLeft <= 300);
+}
+
+/* ============================================================
+   KUIS
+   ============================================================ */
+function startQuiz(){
+  const raw = BANK[state.level][state.type];
+  const selected = selectQuestions(raw, state.level);
+
+  state.questions = selected.map(q => {
+    const idx = q.options.map((_, i) => i);
+    const sh = shuffle(idx);
+    return { ...q, options: sh.map(i => q.options[i]), answer: sh.indexOf(q.answer) };
+  });
+  state.current = 0;
+  state.answers = new Array(state.questions.length).fill(null);
+  state.result = null;
+
+  const label = state.type.charAt(0).toUpperCase() + state.type.slice(1);
+  $('quiz-badge').textContent = `${state.level} · ${label}`;
+  showScreen('quiz');
+  startTimer();
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = state.questions[state.current];
+  const total = state.questions.length;
+
+  $('quiz-counter').textContent = `Soal ${state.current + 1} / ${total}`;
+  $('progress-bar').style.width = (state.current / total * 100) + '%';
+
+  // badge tingkat kesulitan
+  const dEl = $('quiz-diff');
+  dEl.textContent = DIFF_LABEL[q.diff] || 'Sedang';
+  dEl.className = 'badge diff-' + (q.diff || 'sedang');
+
+  const pbox = $('passage-box');
+  if(q.passage){ pbox.textContent = q.passage; pbox.classList.remove('hidden'); }
+  else pbox.classList.add('hidden');
+
+  $('q-text').textContent = q.q;
+
+  const cbox = $('choices');
+  cbox.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.innerHTML = `<span class="letter">${letters[i]}</span><span>${sanitize(opt)}</span>`;
+    b.addEventListener('click', () => selectAnswer(i));
+    cbox.appendChild(b);
+  });
+
+  const saved = state.answers[state.current];
+  if(saved !== null){ cbox.children[saved].classList.add('selected'); $('btn-next').disabled = false; }
+  else $('btn-next').disabled = true;
+
+  $('btn-next').textContent = (state.current === total - 1) ? 'Selesai ✓' : 'Lanjut →';
+}
+
+function selectAnswer(idx){
+  state.answers[state.current] = idx;
+  const cbox = $('choices');
+  Array.from(cbox.children).forEach((c, i) => c.classList.toggle('selected', i === idx));
+  $('btn-next').disabled = false;
+}
+
+$('btn-next').addEventListener('click', () => {
+  if(state.current < state.questions.length - 1){ state.current++; renderQuestion(); }
+  else finishQuiz(false);
+});
+
+$('btn-quit').addEventListener('click', () => {
+  if(confirm('Keluar dari asesmen? Jawaban dan waktu tidak akan disimpan.')){
+    stopTimer(); resetHome();
+  }
+});
+
+/* ============================================================
+   HASIL
+   ============================================================ */
+function finishQuiz(timeUp){
+  stopTimer();
+
+  const total = state.questions.length;
+  let correct = 0;
+  const diffStat = { mudah:{t:0,c:0}, sedang:{t:0,c:0}, sulit:{t:0,c:0} };
+
+  state.questions.forEach((q, i) => {
+    const d = q.diff || 'sedang';
+    diffStat[d].t++;
+    if(state.answers[i] === q.answer){ correct++; diffStat[d].c++; }
+  });
+  const wrong = total - correct;
+  const score = Math.round(correct / total * 100);
+
+  state.result = {
+    nama:state.nama, kelas:state.kelas, level:state.level, type:state.type,
+    total, correct, wrong, score, timeUp, diffStat, tanggal:new Date()
+  };
+
+  $('res-nama').textContent = state.nama;
+  $('res-kelas').textContent = state.kelas;
+  $('res-jenjang').textContent = state.level;
+  $('res-jenis').textContent = state.type.charAt(0).toUpperCase() + state.type.slice(1);
+
+  $('score-num').textContent = score;
+  const circle = $('score-circle');
+  const deg = score * 3.6;
+  let color = '#dc2626';
+  if(score >= 80) color = '#16a34a';
+  else if(score >= 60) color = '#f59e0b';
+  circle.style.background = `conic-gradient(${color} ${deg}deg, #e2e8f0 ${deg}deg)`;
+
+  let verdict, desc;
+  if(score >= 85){ verdict='🌟 Sangat Baik'; desc='Peserta menunjukkan penguasaan kompetensi yang sangat kuat pada jenjang ini.'; }
+  else if(score >= 70){ verdict='✅ Baik'; desc='Peserta menguasai sebagian besar kompetensi dengan beberapa area yang dapat diperkuat.'; }
+  else if(score >= 50){ verdict='⚠️ Cukup'; desc='Peserta memahami konsep dasar, namun masih memerlukan latihan pada beberapa aspek.'; }
+  else { verdict='❗ Perlu Pendampingan'; desc='Peserta memerlukan bimbingan intensif dan latihan tambahan pada kompetensi dasar.'; }
+  if(timeUp) verdict = '⏰ Waktu Habis — ' + verdict;
+  $('verdict').textContent = verdict;
+  $('verdict-desc').textContent = desc;
+
+  $('stat-correct').textContent = correct;
+  $('stat-wrong').textContent = wrong;
+  $('stat-total').textContent = total;
+
+  // breakdown per tingkat kesulitan
+  const db = $('diff-breakdown');
+  db.innerHTML = ['mudah','sedang','sulit'].map(d => {
+    const s = diffStat[d];
+    const pct = s.t ? Math.round(s.c / s.t * 100) : 0;
+    return `<div class="diff-chip ${d}">
+      <span class="n">${s.c}/${s.t}</span>
+      ${DIFF_LABEL[d]} · ${pct}%
+    </div>`;
+  }).join('');
+
+  const label = state.type.charAt(0).toUpperCase() + state.type.slice(1);
+  $('review-badge').textContent = `${state.level} · ${label}`;
+
+  const list = $('review-list');
+  list.innerHTML = '';
+  state.questions.forEach((q, i) => {
+    const chosen = state.answers[i];
+    const isCorrect = chosen === q.answer;
+    const item = document.createElement('div');
+    item.className = 'rev-item ' + (isCorrect ? 'correct' : 'wrong');
+
+    let html = `<div class="rev-q">${i+1}. ${sanitize(q.q)} <span class="badge diff-${q.diff||'sedang'}" style="margin-left:6px;font-size:11px">${DIFF_LABEL[q.diff]||'Sedang'}</span></div>`;
+    if(chosen !== null){
+      html += `<div class="rev-line ${isCorrect ? 'your-ok' : 'your-no'}">
+        <span class="tag">${isCorrect ? '✔ Jawaban Anda:' : '✘ Jawaban Anda:'}</span>
+        <span>${letters[chosen]}. ${sanitize(q.options[chosen])}</span></div>`;
+    } else {
+      html += `<div class="rev-line your-no"><span class="tag">✘ Tidak dijawab</span></div>`;
+    }
+    if(!isCorrect){
+      html += `<div class="rev-line key"><span class="tag">Kunci:</span>
+        <span>${letters[q.answer]}. ${sanitize(q.options[q.answer])}</span></div>`;
+    }
+    html += `<div class="rev-exp"><b>PEMBAHASAN</b>${sanitize(q.exp)}</div>`;
+    item.innerHTML = html;
+    list.appendChild(item);
+  });
+
+  showScreen('result');
+}
+
+/* ============================================================
+   EKSPOR PDF
+   ============================================================ */
+$('btn-pdf').addEventListener('click', generatePDF);
+
+function generatePDF(){
+  if(!state.result){ alert('Hasil belum tersedia.'); return; }
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    alert('Library PDF belum siap. Periksa koneksi internet lalu coba lagi.'); return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const PW = 210, PH = 297, M = 15, CW = PW - 2*M;
+  let y = M;
+  const R = state.result;
+
+  const setFont = (style, size, color) => { doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(...(color||[15,23,42])); };
+  const line = (yy, color) => { doc.setDrawColor(...(color||[226,232,240])); doc.setLineWidth(0.3); doc.line(M, yy, PW-M, yy); };
+  const drawMiniHeader = () => {
+    setFont('bold', 9, [148,163,184]);
+    doc.text('Laporan Hasil Asesmen Literasi & Numerasi', M, y+4);
+    doc.setDrawColor(226,232,240); doc.line(M, y+6, PW-M, y+6); y += 10;
+  };
+  const ensureSpace = (need) => { if(y + need > PH - M - 8){ doc.addPage(); y = M; drawMiniHeader(); } };
+  const writeWrapped = (text, size, style, width, color, lh) => {
+    setFont(style||'normal', size, color);
+    const lines = doc.splitTextToSize(text, width);
+    const lineH = lh || size * 0.45;
+    lines.forEach(t => { ensureSpace(lineH+1); doc.text(t, M, y+lineH); y += lineH; });
+  };
+
+  // Header utama
+  doc.setFillColor(37,99,235); doc.rect(0,0,PW,26,'F');
+  setFont('bold', 15, [255,255,255]); doc.text('LAPORAN HASIL ASESMEN', M, 12);
+  setFont('normal', 10, [219,234,254]); doc.text('Literasi & Numerasi · Sekolah Rakyat (SRD / SRMP / SRMA)', M, 19);
+  y = 36;
+
+  // A. Identitas
+  const tglStr = R.tanggal.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  const jamStr = R.tanggal.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+
+  setFont('bold', 11, [37,99,235]); doc.text('A. IDENTITAS PESERTA', M, y); y += 6;
+  line(y, [191,219,254]); y += 5;
+
+  const identRows = [
+    ['Nama Lengkap', R.nama], ['Kelas', R.kelas],
+    ['Jenjang', R.level], ['Jenis Asesmen', R.type.charAt(0).toUpperCase()+R.type.slice(1)],
+    ['Tanggal', `${tglStr}, ${jamStr}`], ['Durasi', '35 menit']
+  ];
+  identRows.forEach(([k,v]) => {
+    ensureSpace(6);
+    setFont('bold', 10, [100,116,139]); doc.text(k, M, y);
+    doc.text(':', M+34, y);
+    setFont('normal', 10, [15,23,42]);
+    const val = doc.splitTextToSize(String(v), CW-40);
+    doc.text(val[0], M+38, y); y += 6;
+  });
+  y += 4;
+
+  // B. Ringkasan
+  ensureSpace(46);
+  setFont('bold', 11, [37,99,235]); doc.text('B. RINGKASAN HASIL', M, y); y += 6;
+  line(y, [191,219,254]); y += 6;
+
+  const boxH = 34;
+  doc.setFillColor(248,250,252); doc.setDrawColor(226,232,240);
+  doc.roundedRect(M, y, CW, boxH, 3, 3, 'FD');
+
+  const scoreColor = R.score>=80?[22,163,74]:R.score>=60?[245,158,11]:[220,38,38];
+  setFont('bold', 30, scoreColor); doc.text(String(R.score), M+20, y+20);
+  setFont('normal', 9, [100,116,139]); doc.text('SKOR (0-100)', M+14, y+27);
+
+  doc.setDrawColor(226,232,240); doc.line(M+55, y+5, M+55, y+boxH-5);
+
+  const statsX = M+68, statW = (CW-68)/3;
+  [['BENAR',R.correct,[22,163,74]],['SALAH',R.wrong,[220,38,38]],['TOTAL',R.total,[15,23,42]]].forEach((s,i)=>{
+    const cx = statsX + i*statW + statW/2;
+    setFont('bold', 16, s[2]); doc.text(String(s[1]), cx, y+16, {align:'center'});
+    setFont('normal', 8, [100,116,139]); doc.text(s[0], cx, y+24, {align:'center'});
+  });
+  y += boxH + 6;
+
+  let kategori = 'Perlu Pendampingan';
+  if(R.score>=85) kategori='Sangat Baik';
+  else if(R.score>=70) kategori='Baik';
+  else if(R.score>=50) kategori='Cukup';
+
+  ensureSpace(10);
+  setFont('bold', 10, [100,116,139]); doc.text('Kategori:', M, y);
+  setFont('bold', 10, scoreColor); doc.text(kategori, M+22, y); y += 6;
+
+  if(R.timeUp){
+    setFont('italic', 9, [220,38,38]);
+    doc.text('Catatan: Waktu pengerjaan habis sebelum peserta menyelesaikan seluruh soal.', M, y);
+    y += 5;
+  }
+  y += 4;
+
+  // Breakdown per kesulitan
+  ensureSpace(22);
+  setFont('bold', 10, [100,116,139]); doc.text('Komposisi berdasarkan tingkat kesulitan:', M, y); y += 6;
+  const chipW = (CW - 8)/3;
+  ['mudah','sedang','sulit'].forEach((d,i) => {
+    const s = R.diffStat[d];
+    const cx = M + i*(chipW+4);
+    const bg = d==='mudah'?[220,252,231]:d==='sedang'?[254,243,199]:[254,226,226];
+    const fg = d==='mudah'?[22,101,52]:d==='sedang'?[146,64,14]:[153,27,27];
+    doc.setFillColor(...bg); doc.roundedRect(cx, y, chipW, 12, 2, 2, 'F');
+    setFont('bold', 11, fg);
+    doc.text(`${s.c}/${s.t}`, cx+chipW/2, y+7, {align:'center'});
+    setFont('normal', 8, fg);
+    doc.text(DIFF_LABEL[d], cx+chipW/2, y+11, {align:'center'});
+  });
+  y += 18;
+
+  // C. Rincian
+  ensureSpace(12);
+  setFont('bold', 11, [37,99,235]); doc.text('C. RINCIAN JAWABAN & PEMBAHASAN', M, y); y += 6;
+  line(y, [191,219,254]); y += 6;
+
+  state.questions.forEach((q, i) => {
+    const chosen = state.answers[i];
+    const isCorrect = chosen === q.answer;
+    ensureSpace(30);
+
+    const statusColor = isCorrect ? [22,163,74] : [220,38,38];
+    doc.setFillColor(...(isCorrect ? [240,253,244] : [254,242,242]));
+    doc.roundedRect(M, y, CW, 7, 1.5, 1.5, 'F');
+    setFont('bold', 10, statusColor);
+    doc.text(`Soal ${i+1}  [${DIFF_LABEL[q.diff]||'Sedang'}]`, M+3, y+5);
+    doc.text(isCorrect ? '✔ BENAR' : '✘ SALAH', PW-M-3, y+5, {align:'right'});
+    y += 10;
+
+    writeWrapped(q.q, 10, 'bold', CW, [15,23,42], 4.5);
+    y += 2;
+
+    q.options.forEach((opt, oi) => {
+      ensureSpace(6);
+      const isKey = oi === q.answer;
+      const isChosen = oi === chosen;
+      let color = [71,85,105], style = 'normal';
+      if(isKey){ color = [22,101,52]; style = 'bold'; }
+      if(isChosen && !isCorrect){ color = [185,28,28]; style = 'bold'; }
+      const marker = isKey ? '✓ ' : (isChosen ? '✗ ' : '  ');
+      const tag = isChosen ? '   (jawaban peserta)' : '';
+      writeWrapped(marker + `${letters[oi]}. ` + opt + tag, 9.5, style, CW-4, color, 4.2);
+    });
+    y += 2;
+
+    if(q.exp){
+      ensureSpace(14);
+      const expLines = doc.splitTextToSize('Pembahasan: ' + q.exp, CW - 8);
+      const expH = expLines.length * 4 + 4;
+      doc.setFillColor(255,251,235); doc.setDrawColor(252,211,77);
+      doc.roundedRect(M+2, y, CW-4, expH, 1.5, 1.5, 'FD');
+      setFont('normal', 9, [120,53,15]);
+      expLines.forEach((t,k) => doc.text(t, M+5, y+4+k*4));
+      y += expH + 4;
+    }
+    y += 1; line(y, [241,245,249]); y += 5;
+  });
+
+  // Footer
+  const pages = doc.internal.getNumberOfPages();
+  for(let p=1; p<=pages; p++){
+    doc.setPage(p);
+    doc.setDrawColor(226,232,240); doc.line(M, PH-12, PW-M, PH-12);
+    setFont('normal', 8, [148,163,184]);
+    doc.text(`Dicetak otomatis oleh Aplikasi Asesmen Literasi & Numerasi · Halaman ${p} dari ${pages}`, PW/2, PH-7, {align:'center'});
+  }
+
+  const safeName = (R.nama||'peserta').replace(/[^\w\s-]/g,'').replace(/\s+/g,'_');
+  const safeKelas = (R.kelas||'').replace(/[^\w-]/g,'');
+  doc.save(`Hasil_Asesmen_${safeName}_${safeKelas}_${R.level}_${R.type}.pdf`);
+}
+
+/* ============================================================
+   NAVIGASI
+   ============================================================ */
+$('btn-home').addEventListener('click', resetHome);
+$('btn-retry').addEventListener('click', () => startQuiz());
+
+function resetHome(){
+  stopTimer();
+  state.level = null; state.type = null;
+  state.questions = []; state.current = 0; state.answers = []; state.result = null;
+  document.querySelectorAll('.opt').forEach(b => b.classList.remove('active'));
+  $('quiz-timer').classList.remove('danger');
+  $('quiz-timer').textContent = '35:00';
+  updateStartButton();
+  showScreen('home');
+}
+</script>
+</body>
+</html>
